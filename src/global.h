@@ -6,13 +6,18 @@
 typedef struct _SdlParameters SdlParameters;
 typedef struct _GameResources GameResources;
 typedef struct _Text Text;
+typedef struct _Sprite Sprite;
 
-//#define DEBUG	// Define it to print additional info for debugging
 extern int DEBUG;
 
-extern Text* helloWorld;
-
-typedef enum _GameState { GAME_MAIN_MENU, GAME_RUNNING, GAME_PAUSED, GAME_FINISHED, GAME_RESTART } GameState;
+typedef enum _GameState 
+{ 
+	GAME_MAIN_MENU, 
+	GAME_RUNNING, 
+	GAME_PAUSED, 
+	GAME_FINISHED, 
+	GAME_RESTART 
+} GameState;
 
 typedef struct _SdlParameters 
 {
@@ -28,10 +33,13 @@ typedef struct _SdlParameters
 typedef struct _GameResources
 {
 	const char* tileMapPath;
-	SDL_Texture* tileMap;
 	int tileMapWidth;
 	int tileMapHeight;
+	int backgroundSpriteCount;
 	GameState gameState;
+	SDL_Texture* tileMap;
+	Sprite* backgroundSpriteArray;
+	Sprite* flappyBirdLogo;
 } GameResources;
 
 typedef struct _Text 
@@ -43,3 +51,13 @@ typedef struct _Text
 	int textSize;
 	const char* text;
 }Text;
+
+typedef struct _Sprite
+{
+	const char* name;
+	int angle;
+	int xTranslation;
+	int yTranslation;
+	SDL_Rect srcRect;
+	SDL_Rect destRect;
+}Sprite;

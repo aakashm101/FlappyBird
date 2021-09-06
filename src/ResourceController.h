@@ -1,7 +1,10 @@
 #pragma once
 #include "global.h"
 
-int LoadGameResources(GameResources* gameResources, SdlParameters* sdlParameters);
+int LoadGameResources(GameResources* gameResources, const SdlParameters* const sdlParameters);
 void UnloadGameResources(GameResources* gameResources);
-Text* createText(const char* text, int textSize, SdlParameters* sdlParameters);
-int destroyText(Text* text);
+Text* CreateText(const char* text, int textSize, const SdlParameters* const sdlParameters);
+int DestroyText(Text* text);
+void CenterSpriteOnScreen(Sprite* sprite, const SdlParameters* const sdlParameters);
+void CenterSpriteHorizontallyOnScreen(Sprite* sprite, const SdlParameters* const sdlParameters);
+void CenterSpriteVerticallyOnScreen(Sprite* sprite, const SdlParameters* const sdlParameters);

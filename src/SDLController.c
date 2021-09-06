@@ -10,11 +10,11 @@ int SDL_Start(SdlParameters* sdlParameters)
 	const char* WINDOW_TITLE = "Flappy Bird Clone - by Aakash.M";
 	const char* FONT_FILE_PATH = "res/OpenSans-Regular.ttf";
 
-	sdlParameters->mainLoopRunning = true;
 	sdlParameters->FPS = 30;
+	sdlParameters->mainLoopRunning = true;
+	sdlParameters->fontPath = FONT_FILE_PATH;
 	sdlParameters->window = NULL;
 	sdlParameters->renderer = NULL;
-	sdlParameters->fontPath = FONT_FILE_PATH;
 
 	SDL_SetMainReady();
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)

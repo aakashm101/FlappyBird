@@ -37,6 +37,7 @@ int main(void)
 			if (sdlParameters.event.type == SDL_QUIT)
 			{
 				sdlParameters.mainLoopRunning = false;
+				break;
 			}
 			else if (sdlParameters.event.type == SDL_KEYDOWN || sdlParameters.event.type == SDL_KEYUP)
 			{
