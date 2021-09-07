@@ -1,5 +1,5 @@
 #include "LeaderboardController.h"
-#include "ResourceController.h"
+#include "SDLController.h"
 
 void handleLeaderboard(SdlParameters* sdlParameters, GameResources* gameResources)
 {
@@ -9,11 +9,6 @@ void handleLeaderboard(SdlParameters* sdlParameters, GameResources* gameResource
 	}
 	ParallaxEffect(gameResources->backgroundSpriteArray, gameResources->backgroundSpriteCount, &(gameResources->backgroundLeftEndIndex), &(gameResources->backgroundRightEndIndex));
 
-	SDL_RenderCopy(
-		sdlParameters->renderer,
-		gameResources->comingSoonText->textTexture,
-		NULL,
-		&(gameResources->comingSoonText->destRect));
-
+	SDL_RenderCopy(sdlParameters->renderer, gameResources->comingSoonText->textTexture, NULL, &(gameResources->comingSoonText->destRect));
 	return;
 }

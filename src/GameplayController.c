@@ -1,4 +1,5 @@
 #include "GameplayController.h"
+#include "SDLController.h"
 
 void handleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 {
@@ -16,6 +17,10 @@ void handleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 	}
 	ParallaxEffect(gameResources->floorSpriteArray, gameResources->floorSpriteCount, &(gameResources->floorLeftEndIndex), &(gameResources->floorRightEndIndex));
 
+	// Testing: Two pillars on the screen
+	CopySpriteToRenderer(gameResources->topPillar, sdlParameters, gameResources);
+	CopySpriteToRenderer(gameResources->bottomPillar, sdlParameters, gameResources);
+	
 	SDL_RenderCopy(sdlParameters->renderer, gameResources->comingSoonText->textTexture, NULL, &(gameResources->comingSoonText->destRect));
 	return;
 }

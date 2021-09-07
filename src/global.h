@@ -48,6 +48,10 @@ typedef struct _GameResources
 	Sprite* flappyBirdLogo;			// Pointer to flappy bird logo (Assigned when LoadResources() is called)
 	Sprite* playButton;				// Pointer to play button (Assigned when LoadResources() is called)
 	Sprite* leaderboardButton;		// Pointer to leaderboard button (Assigned when LoadResources() is called)
+	Sprite* topPillar;				// Pointer to topPillar (Assigned when LoadResources() is called)
+	Sprite* bottomPillar;			// Pointer to bottomPillar (Assigned when LoadResources() is called)
+	Sprite* getReady;				// Pointer to sprite with text 'Get Ready'
+	Sprite* gameOver;				// Pointer to sprite with text 'Game Over'
 	Text* comingSoonText;			// Pointer to 'Coming soon' text (Assigned when LoadResources() is called)
 } GameResources;
 

@@ -98,10 +98,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 			&(gameResources->backgroundSpriteArray[backgroundSpriteIndex]),
 			gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.x,
 			gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.y,
-			WINDOW_WIDTH,
-			WINDOW_HEIGHT);
+			SCALED_BACKGROUND_WIDTH,
+			SCALED_BACKGROUND_HEIGHT);
 	}
-	if (DEBUG) printf("[DEBUG INFO] 'background' sprites ready.\n");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprites ready.\n", gameResources->backgroundSpriteArray[0].name);
 
 	// Used to store how many floor images will fit inside the window (Using multiple scrolling floor images to create parallax effect)
 	// Use one more floor image (It can be partially outside the current window) to create the parallax effect
@@ -111,7 +111,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->floorLeftEndIndex = 0;
 	gameResources->floorRightEndIndex = floorImageCount - 1;
 
-	// Set the srcRect and destRect and default values for background images from the tilemap
+	// Set the srcRect and destRect and default values for floor images from the tilemap
 	gameResources->floorSpriteArray = (Sprite*)calloc(floorImageCount, sizeof(Sprite));
 	if (!gameResources->floorSpriteArray)
 	{
@@ -132,8 +132,14 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		gameResources->floorSpriteArray[floorSpriteIndex].destRect.y = WINDOW_HEIGHT - ((double)WINDOW_HEIGHT / 6);
 		gameResources->floorSpriteArray[floorSpriteIndex].destRect.w = SCALED_FLOOR_WIDTH;
 		gameResources->floorSpriteArray[floorSpriteIndex].destRect.h = SCALED_FLOOR_HEIGHT;
+		ScaleSpriteToFitOnArea(
+			&(gameResources->floorSpriteArray[floorSpriteIndex]),
+			gameResources->floorSpriteArray[floorSpriteIndex].destRect.x,
+			gameResources->floorSpriteArray[floorSpriteIndex].destRect.y,
+			SCALED_FLOOR_WIDTH,
+			SCALED_FLOOR_HEIGHT);
 	}
-	if (DEBUG) printf("[DEBUG INFO] 'floor' sprites ready.\n");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprites ready.\n", gameResources->floorSpriteArray[0].name);
 
 	// Set the srcRect and destRect and default values for flappy bird logo from the tilemap
 	// Fit the flappy bird logo to the top 1/3 of the area of the screen
@@ -143,7 +149,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Memory allocation failed for flappy bird logo!\n");
 		return -1;
 	}
-	gameResources->flappyBirdLogo->name = "Flappy bird logo";
+	gameResources->flappyBirdLogo->name = "flappy_bird_logo";
 	gameResources->flappyBirdLogo->angle = 0;
 	gameResources->flappyBirdLogo->xTranslation = 0;
 	gameResources->flappyBirdLogo->yTranslation = 0;
@@ -158,7 +164,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	ScaleSpriteToFitOnArea(gameResources->flappyBirdLogo, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 3);
 	CenterSpriteHorizontallyOnScreen(gameResources->flappyBirdLogo, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->flappyBirdLogo, 0.8);
-	if (DEBUG) printf("[DEBUG INFO] Flappy bird logo ready.\n");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->flappyBirdLogo->name);
 
 	// Set the srcRect and destRect and default values for play button from the tilemap
 	gameResources->playButton = (Sprite*)malloc(sizeof(Sprite));
@@ -180,9 +186,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->playButton->destRect.w = (double)WINDOW_WIDTH / 2;
 	gameResources->playButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->playButton, 0.5);
-	if (DEBUG) printf("[DEBUG INFO] Play button ready.\n");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->playButton->name);
 
-	// Set the srcRect and destRect and default values for leaderbloard button from the tilemap
+	// Set the srcRect and destRect and default values for leaderboard button from the tilemap
 	gameResources->leaderboardButton = (Sprite*)malloc(sizeof(Sprite));
 	if (!gameResources->leaderboardButton)
 	{
@@ -202,7 +208,103 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->leaderboardButton->destRect.w = (double)WINDOW_WIDTH / 2;
 	gameResources->leaderboardButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->leaderboardButton, 0.5);
-	if (DEBUG) printf("[DEBUG INFO] Leaderboard button ready.\n");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->leaderboardButton->name);
+
+	// Set the srcRect and destRect and default values for sprite containing 'Get Ready' text from the tilemap
+	// Place it at WINDOW HEIGHT/6 distance from the top and scale the texture to fit
+	gameResources->getReady = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->getReady)
+	{
+		printf("[ERROR] Memory allocation failed for sprite containing 'Get Ready' text!\n");
+		return -1;
+	}
+	gameResources->getReady->name = "get_ready";
+	gameResources->getReady->angle = 0;
+	gameResources->getReady->xTranslation = 0;
+	gameResources->getReady->yTranslation = 0;
+	gameResources->getReady->srcRect.x = 294;
+	gameResources->getReady->srcRect.y = 58;
+	gameResources->getReady->srcRect.w = 94;
+	gameResources->getReady->srcRect.h = 28;
+	gameResources->getReady->destRect.x = 0;
+	gameResources->getReady->destRect.y = WINDOW_HEIGHT / 6;
+	gameResources->getReady->destRect.w = gameResources->getReady->srcRect.w;
+	gameResources->getReady->destRect.h = gameResources->getReady->srcRect.h;
+	ScaleSpriteToFitOnArea(gameResources->getReady, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 6);
+	CenterSpriteHorizontallyOnScreen(gameResources->getReady, sdlParameters);
+	ScaleSpriteInPlaceByFactor(gameResources->getReady, 0.5);
+
+	// Set the srcRect and destRect and default values for sprite containing 'Game Over' text from the tilemap
+	// Place it at WINDOW HEIGHT/6 distance from the top and scale the texture to fit
+	gameResources->gameOver = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->gameOver)
+	{
+		printf("[ERROR] Memory allocation failed for sprite containing 'Game Over' text!\n");
+		return -1;
+	}
+	gameResources->gameOver->name = "game_over";
+	gameResources->gameOver->angle = 0;
+	gameResources->gameOver->xTranslation = 0;
+	gameResources->gameOver->yTranslation = 0;
+	gameResources->gameOver->srcRect.x = 394;
+	gameResources->gameOver->srcRect.y = 58;
+	gameResources->gameOver->srcRect.w = 98;
+	gameResources->gameOver->srcRect.h = 28;
+	gameResources->gameOver->destRect.x = 0;
+	gameResources->gameOver->destRect.y = WINDOW_HEIGHT / 6;
+	gameResources->gameOver->destRect.w = gameResources->gameOver->srcRect.w;
+	gameResources->gameOver->destRect.h = gameResources->gameOver->srcRect.h;
+	ScaleSpriteToFitOnArea(gameResources->gameOver, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 6);
+	CenterSpriteHorizontallyOnScreen(gameResources->gameOver, sdlParameters);
+	ScaleSpriteInPlaceByFactor(gameResources->gameOver, 0.5);
+
+	// Set the srcRect and destRect and default values for sprite 'top_pillar' text from the tilemap
+	gameResources->topPillar = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->topPillar)
+	{
+		printf("[ERROR] Memory allocation failed for sprite 'top_pillar'!\n");
+		return -1;
+	}
+	gameResources->topPillar->name = "top_pillar";
+	gameResources->topPillar->angle = 0;
+	gameResources->topPillar->xTranslation = 0;
+	gameResources->topPillar->yTranslation = 0;
+	gameResources->topPillar->srcRect.x = 56;
+	gameResources->topPillar->srcRect.y = 324;
+	gameResources->topPillar->srcRect.w = 26;
+	gameResources->topPillar->srcRect.h = 162;
+	gameResources->topPillar->destRect.x = 0;
+	gameResources->topPillar->destRect.y = 0;
+	gameResources->topPillar->destRect.w = gameResources->topPillar->srcRect.w;
+	gameResources->topPillar->destRect.h = gameResources->topPillar->srcRect.h;
+	ScaleSpriteToFitOnArea(gameResources->topPillar, WINDOW_WIDTH / 4, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
+
+	// Set the srcRect and destRect and default values for sprite 'bottom_pillar' text from the tilemap
+	gameResources->bottomPillar = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->bottomPillar)
+	{
+		printf("[ERROR] Memory allocation failed for sprite 'bottom_pillar'!\n");
+		return -1;
+	}
+	gameResources->bottomPillar->name = "bottom_pillar";
+	gameResources->bottomPillar->angle = 0;
+	gameResources->bottomPillar->xTranslation = 0;
+	gameResources->bottomPillar->yTranslation = 0;
+	gameResources->bottomPillar->srcRect.x = 84;
+	gameResources->bottomPillar->srcRect.y = 324;
+	gameResources->bottomPillar->srcRect.w = 26;
+	gameResources->bottomPillar->srcRect.h = 162;
+	gameResources->bottomPillar->destRect.x = 0;
+	gameResources->bottomPillar->destRect.y = 0;
+	gameResources->bottomPillar->destRect.w = gameResources->bottomPillar->srcRect.w;
+	gameResources->bottomPillar->destRect.h = gameResources->bottomPillar->srcRect.h;
+	ScaleSpriteToFitOnArea(
+		gameResources->bottomPillar,
+		WINDOW_WIDTH - (WINDOW_WIDTH / 4),
+		0,
+		WINDOW_WIDTH / 10, 
+		WINDOW_HEIGHT / 2);
+	gameResources->bottomPillar->destRect.y = WINDOW_HEIGHT - gameResources->floorSpriteArray[0].destRect.h - gameResources->bottomPillar->destRect.h;
 
 	// Allocate memory for 'Coming soon' Text
 	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);
@@ -222,7 +324,15 @@ void UnloadGameResources(GameResources* gameResources)
 	{
 		free(gameResources->backgroundSpriteArray);
 		gameResources->backgroundSpriteArray = NULL;
-		if (DEBUG) printf("[DEBUG INFO] Background sprites unloaded.\n");
+		if (DEBUG) printf("[DEBUG INFO] 'Background' sprites unloaded.\n");
+	}
+
+	// Deallocate memory for floor sprites
+	if (gameResources->floorSpriteArray)
+	{
+		free(gameResources->floorSpriteArray);
+		gameResources->floorSpriteArray = NULL;
+		if (DEBUG) printf("[DEBUG INFO] 'Floor' sprites unloaded.\n");
 	}
 
 	// Deallocate memory for flappy bird logo
@@ -230,7 +340,7 @@ void UnloadGameResources(GameResources* gameResources)
 	{
 		free(gameResources->flappyBirdLogo);
 		gameResources->flappyBirdLogo = NULL;
-		if (DEBUG) printf("[DEBUG INFO] Flappy bird logo unloaded.\n");
+		if (DEBUG) printf("[DEBUG INFO] 'Flappy bird logo' unloaded.\n");
 	}
 
 	// Deallocate memory for play button
@@ -238,7 +348,7 @@ void UnloadGameResources(GameResources* gameResources)
 	{
 		free(gameResources->playButton);
 		gameResources->playButton = NULL;
-		if (DEBUG) printf("[DEBUG INFO] Play button unloaded.\n");
+		if (DEBUG) printf("[DEBUG INFO] 'Play' button unloaded.\n");
 	}
 	
 	// Deallocate memory for leaderboards button
@@ -246,7 +356,39 @@ void UnloadGameResources(GameResources* gameResources)
 	{
 		free(gameResources->leaderboardButton);
 		gameResources->leaderboardButton = NULL;
-		if (DEBUG) printf("[DEBUG INFO] Leaderboard button unloaded.\n");
+		if (DEBUG) printf("[DEBUG INFO] 'Leaderboard' button unloaded.\n");
+	}
+
+	// Deallocate memory for sprite containing 'Get Ready' text
+	if (gameResources->getReady)
+	{
+		free(gameResources->getReady);
+		gameResources->getReady = NULL;
+		if (DEBUG) printf("[DEBUG INFO] 'Get Ready' sprite unloaded.\n");
+	}
+
+	// Deallocate memory for sprite containing 'Game Over' text
+	if (gameResources->gameOver)
+	{
+		free(gameResources->gameOver);
+		gameResources->gameOver = NULL;
+		if (DEBUG) printf("[DEBUG INFO] 'Game Over' sprite unloaded.\n");
+	}
+
+	// Deallocate memory for 'top_pillar' sprite
+	if (gameResources->topPillar)
+	{
+		free(gameResources->topPillar);
+		gameResources->topPillar = NULL;
+		if (DEBUG) printf("[DEBUG INFO] 'top_pillar' sprite unloaded.\n");
+	}
+
+	// Deallocate memory for 'bottom_pillar' sprite
+	if (gameResources->bottomPillar)
+	{
+		free(gameResources->bottomPillar);
+		gameResources->bottomPillar = NULL;
+		if (DEBUG) printf("[DEBUG INFO] 'bottom_pillar' sprite unloaded.\n");
 	}
 
 	// Deallocate memory for the tilemap
@@ -486,6 +628,7 @@ void ScaleSpriteInPlaceByFactor(Sprite* sprite, float factor)
 
 	sprite->destRect.x = centerX - ((float)scaledDestWidth / 2);
 	sprite->destRect.y = centerY - ((float)scaledDestHeight / 2);
+
 	sprite->destRect.w = scaledDestWidth;
 	sprite->destRect.h = scaledDestHeight;
 
