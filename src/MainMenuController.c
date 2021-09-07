@@ -1,25 +1,14 @@
 #include "MainMenuController.h"
+#include "SDLController.h"
 
 void showMainMenu(GameResources* gameResources, SdlParameters* sdlParameters)
 {
 	for (int backgroundSpriteIndex = 0; backgroundSpriteIndex < gameResources->backgroundSpriteCount; backgroundSpriteIndex++)
 	{
-		SDL_RenderCopyEx(
-			sdlParameters->renderer,
-			gameResources->tileMap,
-			&(gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect),
-			&(gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect),
-			gameResources->backgroundSpriteArray[backgroundSpriteIndex].angle,
-			NULL,
-			SDL_FLIP_NONE);
+		CopySpriteToRenderer(&(gameResources->backgroundSpriteArray[backgroundSpriteIndex]), sdlParameters, gameResources);
 	}
-
-	SDL_RenderCopyEx(
-		sdlParameters->renderer, 
-		gameResources->tileMap, 
-		&(gameResources->flappyBirdLogo->srcRect), 
-		&(gameResources->flappyBirdLogo->destRect),
-		gameResources->flappyBirdLogo->angle, 
-		NULL, 
-		SDL_FLIP_NONE);
+	CopySpriteToRenderer(gameResources->flappyBirdLogo, sdlParameters, gameResources);
+	CopySpriteToRenderer(gameResources->playButton, sdlParameters, gameResources);
+	CopySpriteToRenderer(gameResources->leaderboardButton, sdlParameters, gameResources);
+	return;
 }

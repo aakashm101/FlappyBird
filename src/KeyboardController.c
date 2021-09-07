@@ -6,7 +6,7 @@ void handleKeyboardEvents(SdlParameters* sdlParameters)
 {
 	if (sdlParameters->event.type == SDL_KEYDOWN)	// If a key is pressed down (Oneshot)
 	{
-		if (DEBUG) printf("[DEBUG INFO] SDL_KEYDOWN Event occurred. KEY: %s\n", SDL_GetKeyName(sdlParameters->event.key.keysym.sym));
+		if (DEBUG) printf("[DEBUG INFO] SDL_KEYDOWN event occurred. KEY: %s\n", SDL_GetKeyName(sdlParameters->event.key.keysym.sym));
 		switch (sdlParameters->event.key.keysym.sym)
 		{
 		case SDLK_ESCAPE:

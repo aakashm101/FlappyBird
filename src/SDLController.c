@@ -85,3 +85,16 @@ void SDL_End(SdlParameters* sdlParameters)
 	SDL_Quit();
 	return;
 }
+
+void CopySpriteToRenderer(Sprite* sprite, SdlParameters* const sdlParameters, const GameResources* const gameResources)
+{
+	SDL_RenderCopyEx(
+		sdlParameters->renderer,
+		gameResources->tileMap,
+		&(sprite->srcRect),
+		&(sprite->destRect),
+		sprite->angle,
+		NULL,
+		SDL_FLIP_NONE);
+	return;
+}

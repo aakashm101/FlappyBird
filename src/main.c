@@ -24,8 +24,6 @@ int main(void)
 	
 	LoadGameResources(&gameResources, &sdlParameters);
 	gameResources.gameState = GAME_MAIN_MENU;	// Open the main menu on start
-	
-	SDL_SetRenderDrawColor(sdlParameters.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	while (sdlParameters.mainLoopRunning)
 	{
 		Uint32 frameStart, frameDelay;

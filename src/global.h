@@ -40,13 +40,14 @@ typedef struct _GameResources
 	SDL_Texture* tileMap;
 	Sprite* backgroundSpriteArray;
 	Sprite* flappyBirdLogo;
+	Sprite* playButton;
+	Sprite* leaderboardButton;
 } GameResources;
 
 typedef struct _Text 
 {
 	SDL_Texture* textTexture;
 	SDL_Surface* textSurface;
-	SDL_Color fontColor;
 	SDL_Rect destRect;
 	int textSize;
 	const char* text;
