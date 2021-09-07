@@ -5,7 +5,11 @@
 
 int LoadGameResources(GameResources* gameResources, const SdlParameters* const sdlParameters)
 {
-	SDL_Color fontColor = { 0xFF, 0xFF, 0xFF, 0xFF };
+	// Fetch the window dimension values
+	const int WINDOW_WIDTH = sdlParameters->dm.w;
+	const int WINDOW_HEIGHT = sdlParameters->dm.h;
+
+	const SDL_Color fontColor = { 0xFF, 0xFF, 0xFF, 0xFF };
 
 	// Background X,Y coordinates, width and height (Obtained from tilemap)
 	const int BACKGROUND_XPOS = 0;
@@ -13,6 +17,12 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	const int BACKGROUND_WIDTH = 144;
 	const int BACKGROUND_HEIGHT = 256;
 	
+	// Floor X,Y coordinates, width and height (Obtained from tilemap)
+	const int FLOOR_XPOS = 292;
+	const int FLOOR_YPOS = 0;
+	const int FLOOR_WIDTH = 68;
+	const int FLOOR_HEIGHT = 56;
+
 	// Flappy bird logo X,Y coordinates, width and height (Obtained from tilemap)
 	const int FLAPPY_BIRD_LOGO_XPOS = 350;
 	const int FLAPPY_BIRD_LOGO_YPOS = 90;
@@ -32,11 +42,17 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	const int LEADERBOARD_BUTTON_HEIGHT = 30;
 
 	// Scale the background image to the window size without affecting aspect ratio
-	const double WINDOW_WIDTH_HEIGHT_RATIO = (double) BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
-	const int SCALED_BACKGROUND_HEIGHT = sdlParameters->dm.h;
-	const int SCALED_BACKGROUND_WIDTH = ceil(SCALED_BACKGROUND_HEIGHT * WINDOW_WIDTH_HEIGHT_RATIO);
+	const double BACKGROUND_WIDTH_HEIGHT_RATIO = (double) BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
+	const int SCALED_BACKGROUND_HEIGHT = WINDOW_HEIGHT;
+	const int SCALED_BACKGROUND_WIDTH = ceil(SCALED_BACKGROUND_HEIGHT * BACKGROUND_WIDTH_HEIGHT_RATIO);
+
+	// Scale the floor image to the window height / 6 without affecting aspect ratio
+	const double FLOOR_WIDTH_HEIGHT_RATIO = (double)FLOOR_WIDTH / FLOOR_HEIGHT;
+	const int SCALED_FLOOR_HEIGHT = (double)WINDOW_HEIGHT / 6;
+	const int SCALED_FLOOR_WIDTH = ceil(SCALED_FLOOR_HEIGHT * FLOOR_WIDTH_HEIGHT_RATIO);
 
 	int backgroundImageCount;
+	int floorImageCount;
 
 	// Load the tilemap from the disk
 	gameResources->tileMapPath = "res/tilemap.png";
@@ -51,7 +67,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 
 	// Used to store how many background images will fit inside the window (Using multiple scrolling background images to create parallax effect)
 	// Use one more background image (It can be partially outside the current window) to create the parallax effect
-	backgroundImageCount = ceil((double)sdlParameters->dm.w / SCALED_BACKGROUND_WIDTH);
+	backgroundImageCount = ceil((double)WINDOW_WIDTH / SCALED_BACKGROUND_WIDTH);
 	backgroundImageCount = backgroundImageCount + 1;
 	gameResources->backgroundSpriteCount = backgroundImageCount;
 	gameResources->backgroundLeftEndIndex = 0;
@@ -82,10 +98,42 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 			&(gameResources->backgroundSpriteArray[backgroundSpriteIndex]),
 			gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.x,
 			gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.y,
-			sdlParameters->dm.w,
-			sdlParameters->dm.h);
+			WINDOW_WIDTH,
+			WINDOW_HEIGHT);
 	}
-	if (DEBUG) printf("[DEBUG INFO] Background sprites ready.\n");
+	if (DEBUG) printf("[DEBUG INFO] 'background' sprites ready.\n");
+
+	// Used to store how many floor images will fit inside the window (Using multiple scrolling floor images to create parallax effect)
+	// Use one more floor image (It can be partially outside the current window) to create the parallax effect
+	floorImageCount = ceil((double)WINDOW_WIDTH / SCALED_FLOOR_WIDTH);
+	floorImageCount = floorImageCount + 1;
+	gameResources->floorSpriteCount = floorImageCount;
+	gameResources->floorLeftEndIndex = 0;
+	gameResources->floorRightEndIndex = floorImageCount - 1;
+
+	// Set the srcRect and destRect and default values for background images from the tilemap
+	gameResources->floorSpriteArray = (Sprite*)calloc(floorImageCount, sizeof(Sprite));
+	if (!gameResources->floorSpriteArray)
+	{
+		printf("[ERROR] Failed to allocate memory for floor sprite!\n");
+		return -1;
+	}
+	for (int floorSpriteIndex = 0; floorSpriteIndex < floorImageCount; floorSpriteIndex++)
+	{
+		gameResources->floorSpriteArray[floorSpriteIndex].name = "floor";
+		gameResources->floorSpriteArray[floorSpriteIndex].angle = 0;
+		gameResources->floorSpriteArray[floorSpriteIndex].xTranslation = -1;
+		gameResources->floorSpriteArray[floorSpriteIndex].yTranslation = 0;
+		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.x = FLOOR_XPOS;
+		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.y = FLOOR_YPOS;
+		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.w = FLOOR_WIDTH;
+		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.h = FLOOR_HEIGHT;
+		gameResources->floorSpriteArray[floorSpriteIndex].destRect.x = (floorSpriteIndex == 0) ? 0 : gameResources->floorSpriteArray[floorSpriteIndex - 1].destRect.x + gameResources->floorSpriteArray[floorSpriteIndex - 1].destRect.w;	// Place the floors size by side
+		gameResources->floorSpriteArray[floorSpriteIndex].destRect.y = WINDOW_HEIGHT - ((double)WINDOW_HEIGHT / 6);
+		gameResources->floorSpriteArray[floorSpriteIndex].destRect.w = SCALED_FLOOR_WIDTH;
+		gameResources->floorSpriteArray[floorSpriteIndex].destRect.h = SCALED_FLOOR_HEIGHT;
+	}
+	if (DEBUG) printf("[DEBUG INFO] 'floor' sprites ready.\n");
 
 	// Set the srcRect and destRect and default values for flappy bird logo from the tilemap
 	// Fit the flappy bird logo to the top 1/3 of the area of the screen
@@ -107,7 +155,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->flappyBirdLogo->destRect.y = 0;
 	gameResources->flappyBirdLogo->destRect.w = FLAPPY_BIRD_LOGO_WIDTH;
 	gameResources->flappyBirdLogo->destRect.h = FLAPPY_BIRD_LOGO_HEIGHT;
-	ScaleSpriteToFitOnArea(gameResources->flappyBirdLogo, 0, 0, sdlParameters->dm.w, (double)sdlParameters->dm.h / 3);
+	ScaleSpriteToFitOnArea(gameResources->flappyBirdLogo, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 3);
 	CenterSpriteHorizontallyOnScreen(gameResources->flappyBirdLogo, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->flappyBirdLogo, 0.8);
 	if (DEBUG) printf("[DEBUG INFO] Flappy bird logo ready.\n");
@@ -128,9 +176,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->playButton->srcRect.w = PLAY_BUTTON_WIDTH;
 	gameResources->playButton->srcRect.h = PLAY_BUTTON_HEIGHT;
 	gameResources->playButton->destRect.x = 0;
-	gameResources->playButton->destRect.y = ((double)sdlParameters->dm.h / 2) + PLAY_BUTTON_HEIGHT;
-	gameResources->playButton->destRect.w = (double)sdlParameters->dm.w / 2;
-	gameResources->playButton->destRect.h = (double)sdlParameters->dm.h / 2;
+	gameResources->playButton->destRect.y = ((double)WINDOW_HEIGHT / 2) + PLAY_BUTTON_HEIGHT;
+	gameResources->playButton->destRect.w = (double)WINDOW_WIDTH / 2;
+	gameResources->playButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->playButton, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] Play button ready.\n");
 
@@ -149,15 +197,20 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->leaderboardButton->srcRect.y = LEADERBOARD_BUTTON_YPOS;
 	gameResources->leaderboardButton->srcRect.w = LEADERBOARD_BUTTON_WIDTH;
 	gameResources->leaderboardButton->srcRect.h = LEADERBOARD_BUTTON_HEIGHT;
-	gameResources->leaderboardButton->destRect.x = (double)sdlParameters->dm.w / 2;
-	gameResources->leaderboardButton->destRect.y = ((double)sdlParameters->dm.h / 2) + LEADERBOARD_BUTTON_HEIGHT;
-	gameResources->leaderboardButton->destRect.w = (double)sdlParameters->dm.w / 2;
-	gameResources->leaderboardButton->destRect.h = (double)sdlParameters->dm.h / 2;
+	gameResources->leaderboardButton->destRect.x = (double)WINDOW_WIDTH / 2;
+	gameResources->leaderboardButton->destRect.y = ((double)WINDOW_HEIGHT / 2) + LEADERBOARD_BUTTON_HEIGHT;
+	gameResources->leaderboardButton->destRect.w = (double)WINDOW_WIDTH / 2;
+	gameResources->leaderboardButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->leaderboardButton, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] Leaderboard button ready.\n");
 
 	// Allocate memory for 'Coming soon' Text
 	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);
+	if (!gameResources->comingSoonText)
+	{
+		printf("[ERROR] Text creation failed!\n");
+		return -1;
+	}
 
 	return 0;
 }
@@ -295,29 +348,45 @@ void DestroyText(Text* text)
 	return;
 }
 
-void ParallaxEffect(Sprite* sprites, int backgroundImageCount, GameResources* gameResources)
+void ParallaxEffect(Sprite* sprites, int maxSpriteCount, int* const leftEndIndex, int* const rightEndIndex)
 {
-	// Used to store the index of the background image on the left and right ends of the screen
-	int leftEndIndex = gameResources->backgroundLeftEndIndex;
-	int rightEndIndex = gameResources->backgroundRightEndIndex;
+	if (!sprites)
+	{
+		printf("[ERROR] Cannot create parallax effect with empty sprites!\n");
+		return;
+	}
+	else if (!leftEndIndex)
+	{
+		printf("[ERROR] Cannot create parallax effect without left index value!\n");
+		return;
+	}
+	else if (!rightEndIndex)
+	{
+		printf("[ERROR] Cannot create parallax effect without right index value!\n");
+		return;
+	}
+	else if (maxSpriteCount <= 0)
+	{
+		printf("[ERROR] Cannot create parallax effect with %d sprites!\n", maxSpriteCount);
+		return;
+	}
 
 	// Move the backgrounds
-	for (int backgroundImageIndex = 0; backgroundImageIndex < backgroundImageCount; backgroundImageIndex++)
+	for (int spriteIndex = 0; spriteIndex < maxSpriteCount; spriteIndex++)
 	{
 		// Move the background towards left
-		sprites[backgroundImageIndex].destRect.x += sprites[backgroundImageIndex].xTranslation;
+		sprites[spriteIndex].destRect.x += sprites[spriteIndex].xTranslation;
 	}
 
 	// If the background at the left end goes out of screen
-	if (sprites[leftEndIndex].destRect.x + sprites[leftEndIndex].destRect.w < 0)
+	if (sprites[*leftEndIndex].destRect.x + sprites[*leftEndIndex].destRect.w < 0)
 	{
-		sprites[leftEndIndex].destRect.x = sprites[rightEndIndex].destRect.x + sprites[rightEndIndex].destRect.w;
-		printf("Moving background at index %d to %d\n", leftEndIndex, rightEndIndex);
+		sprites[*leftEndIndex].destRect.x = sprites[*rightEndIndex].destRect.x + sprites[*rightEndIndex].destRect.w;
 	}
 
 	// Wraparound - Indices cannot go beyond (gameResources->backgroundSpriteCount - 1)
-	gameResources->backgroundLeftEndIndex = (leftEndIndex + 1) % gameResources->backgroundSpriteCount;
-	gameResources->backgroundRightEndIndex = (rightEndIndex + 1) % gameResources->backgroundSpriteCount;
+	*leftEndIndex = (*leftEndIndex + 1) % maxSpriteCount;
+	*rightEndIndex = (*rightEndIndex + 1) % maxSpriteCount;
 
 	return;
 }

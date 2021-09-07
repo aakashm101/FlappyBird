@@ -21,9 +21,20 @@ int main(void)
 	{
 		printf("[ERROR] Failed to start SDL!\n");
 		SDL_End(&sdlParameters);
+		printf("Press any key to exit...\n");
+		getchar();
+		return -1;
 	}
 	
-	LoadGameResources(&gameResources, &sdlParameters);
+	if (LoadGameResources(&gameResources, &sdlParameters) != 0)
+	{
+		SDL_End(&sdlParameters);
+		printf("[ERROR] Error loading game resources!\n");
+		printf("Press any key to exit...\n");
+		getchar();
+		return -1;
+	}
+
 	gameResources.gameState = GAME_MAIN_MENU;	// Open the main menu on start
 	while (sdlParameters.mainLoopRunning)
 	{

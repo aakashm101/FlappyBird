@@ -10,4 +10,4 @@ void ScaleSpriteToFitOnArea(Sprite* sprite, int destX, int destY, int destWidth,
 void ScaleSpriteInPlaceByFactor(Sprite* sprite, float factor);
 Text* CreateText(const char* text, const int textSize, SdlParameters* const sdlParameters, SDL_Color fontColor);
 void DestroyText(Text* text);
-void ParallaxEffect(Sprite* sprites, int backgroundImageCount, GameResources* gameResources);
+void ParallaxEffect(Sprite* sprites, int backgroundImageCount, int* const leftEndIndex, int* const rightEndIndex);

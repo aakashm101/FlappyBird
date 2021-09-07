@@ -7,7 +7,7 @@ void handleLeaderboard(SdlParameters* sdlParameters, GameResources* gameResource
 	{
 		CopySpriteToRenderer(&(gameResources->backgroundSpriteArray[backgroundSpriteIndex]), sdlParameters, gameResources);
 	}
-	ParallaxEffect(gameResources->backgroundSpriteArray, gameResources->backgroundSpriteCount, gameResources);
+	ParallaxEffect(gameResources->backgroundSpriteArray, gameResources->backgroundSpriteCount, &(gameResources->backgroundLeftEndIndex), &(gameResources->backgroundRightEndIndex));
 
 	SDL_RenderCopy(
 		sdlParameters->renderer,

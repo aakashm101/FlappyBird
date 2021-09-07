@@ -16,6 +16,7 @@ void showMainMenu(GameResources* gameResources, SdlParameters* sdlParameters)
 	CopySpriteToRenderer(gameResources->flappyBirdLogo, sdlParameters, gameResources);
 	CopySpriteToRenderer(gameResources->playButton, sdlParameters, gameResources);
 	CopySpriteToRenderer(gameResources->leaderboardButton, sdlParameters, gameResources);
-	ParallaxEffect(gameResources->backgroundSpriteArray, gameResources->backgroundSpriteCount, gameResources);
+	ParallaxEffect(gameResources->backgroundSpriteArray, gameResources->backgroundSpriteCount, &(gameResources->backgroundLeftEndIndex), &(gameResources->backgroundRightEndIndex));
+
 	return;
 }
