@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "KeyboardController.h"
 
-void handleKeyboardEvents(SdlParameters* sdlParameters)
+void handleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResources)
 {
 	if (sdlParameters->event.type == SDL_KEYDOWN)	// If a key is pressed down (Oneshot)
 	{

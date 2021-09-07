@@ -5,7 +5,7 @@
 
 int LoadGameResources(GameResources* gameResources, const SdlParameters* const sdlParameters)
 {
-	const int WINDOW_AREA = sdlParameters->dm.w * sdlParameters->dm.h;
+	SDL_Color fontColor = { 0xFF, 0xFF, 0xFF, 0xFF };
 
 	// Background X,Y coordinates, width and height (Obtained from tilemap)
 	const int BACKGROUND_XPOS = 0;
@@ -32,10 +32,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	const int LEADERBOARD_BUTTON_HEIGHT = 30;
 
 	// Scale the background image to the window size without affecting aspect ratio
-	const double WINDOW_WIDTH_HEIGHT_RATIO = (double)BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
+	const double WINDOW_WIDTH_HEIGHT_RATIO = (double) BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
 	const int SCALED_BACKGROUND_HEIGHT = sdlParameters->dm.h;
-	const int SCALED_BACKGROUND_WIDTH = SCALED_BACKGROUND_HEIGHT * WINDOW_WIDTH_HEIGHT_RATIO;
-	const int SCALED_BACKGROUND_AREA = SCALED_BACKGROUND_WIDTH * SCALED_BACKGROUND_HEIGHT;
+	const int SCALED_BACKGROUND_WIDTH = ceil(SCALED_BACKGROUND_HEIGHT * WINDOW_WIDTH_HEIGHT_RATIO);
 
 	int backgroundImageCount;
 
@@ -52,9 +51,11 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 
 	// Used to store how many background images will fit inside the window (Using multiple scrolling background images to create parallax effect)
 	// Use one more background image (It can be partially outside the current window) to create the parallax effect
-	backgroundImageCount = (double)WINDOW_AREA / SCALED_BACKGROUND_AREA;
-	backgroundImageCount++;
+	backgroundImageCount = ceil((double)sdlParameters->dm.w / SCALED_BACKGROUND_WIDTH);
+	backgroundImageCount = backgroundImageCount + 1;
 	gameResources->backgroundSpriteCount = backgroundImageCount;
+	gameResources->backgroundLeftEndIndex = 0;
+	gameResources->backgroundRightEndIndex = backgroundImageCount - 1;
 
 	// Set the srcRect and destRect and default values for background images from the tilemap
 	gameResources->backgroundSpriteArray = (Sprite*)calloc(backgroundImageCount, sizeof(Sprite));
@@ -155,6 +156,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	ScaleSpriteInPlaceByFactor(gameResources->leaderboardButton, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] Leaderboard button ready.\n");
 
+	// Allocate memory for 'Coming soon' Text
+	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);
+
 	return 0;
 }
 
@@ -176,12 +180,35 @@ void UnloadGameResources(GameResources* gameResources)
 		if (DEBUG) printf("[DEBUG INFO] Flappy bird logo unloaded.\n");
 	}
 
+	// Deallocate memory for play button
+	if (gameResources->playButton)
+	{
+		free(gameResources->playButton);
+		gameResources->playButton = NULL;
+		if (DEBUG) printf("[DEBUG INFO] Play button unloaded.\n");
+	}
+	
+	// Deallocate memory for leaderboards button
+	if (gameResources->leaderboardButton)
+	{
+		free(gameResources->leaderboardButton);
+		gameResources->leaderboardButton = NULL;
+		if (DEBUG) printf("[DEBUG INFO] Leaderboard button unloaded.\n");
+	}
+
 	// Deallocate memory for the tilemap
 	if (gameResources->tileMap)
 	{
 		SDL_DestroyTexture(gameResources->tileMap);
 		gameResources->tileMap = NULL;
 		if (DEBUG) printf("[DEBUG INFO] Tilemap %s unloaded.\n", gameResources->tileMapPath);
+	}
+
+	// Deallocate memory for 'Coming Soon' text
+	if (gameResources->comingSoonText)
+	{
+		DestroyText(gameResources->comingSoonText);
+		gameResources->comingSoonText = NULL;
 	}
 
 	return;
@@ -240,22 +267,24 @@ Text* CreateText(const char* text, const int textSize, SdlParameters* const sdlP
 	return newText;
 }
 
-int DestroyText(Text* text)
+void DestroyText(Text* text)
 {
 	if (!text)
 	{
 		printf("Cannot destroy empty Text!\n");
-		return -1;
+		return;
 	}
 
 	if (DEBUG) printf("[DEBUG INFO] Destroying Text '%s'.\n", text->text);
 	if (text->textSurface)
 	{
 		SDL_FreeSurface(text->textSurface);
+		text->textSurface = NULL;
 	}
 	if (text->textTexture)
 	{
 		SDL_DestroyTexture(text->textTexture);
+		text->textTexture = NULL;
 	}
 	if (text)
 	{
@@ -263,7 +292,34 @@ int DestroyText(Text* text)
 	}
 	if (DEBUG) printf("[DEBUG INFO] Text destroyed.\n");
 	
-	return 0;
+	return;
+}
+
+void ParallaxEffect(Sprite* sprites, int backgroundImageCount, GameResources* gameResources)
+{
+	// Used to store the index of the background image on the left and right ends of the screen
+	int leftEndIndex = gameResources->backgroundLeftEndIndex;
+	int rightEndIndex = gameResources->backgroundRightEndIndex;
+
+	// Move the backgrounds
+	for (int backgroundImageIndex = 0; backgroundImageIndex < backgroundImageCount; backgroundImageIndex++)
+	{
+		// Move the background towards left
+		sprites[backgroundImageIndex].destRect.x += sprites[backgroundImageIndex].xTranslation;
+	}
+
+	// If the background at the left end goes out of screen
+	if (sprites[leftEndIndex].destRect.x + sprites[leftEndIndex].destRect.w < 0)
+	{
+		sprites[leftEndIndex].destRect.x = sprites[rightEndIndex].destRect.x + sprites[rightEndIndex].destRect.w;
+		printf("Moving background at index %d to %d\n", leftEndIndex, rightEndIndex);
+	}
+
+	// Wraparound - Indices cannot go beyond (gameResources->backgroundSpriteCount - 1)
+	gameResources->backgroundLeftEndIndex = (leftEndIndex + 1) % gameResources->backgroundSpriteCount;
+	gameResources->backgroundRightEndIndex = (rightEndIndex + 1) % gameResources->backgroundSpriteCount;
+
+	return;
 }
 
 void CenterSpriteOnScreen(Sprite* sprite, const SdlParameters* const sdlParameters)

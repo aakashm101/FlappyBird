@@ -6,6 +6,7 @@
 #include "global.h"
 #include "SDLController.h"
 #include "KeyboardController.h"
+#include "MouseController.h"
 #include "ResourceController.h"
 #include "MainMenuController.h"
 
@@ -39,7 +40,11 @@ int main(void)
 			}
 			else if (sdlParameters.event.type == SDL_KEYDOWN || sdlParameters.event.type == SDL_KEYUP)
 			{
-				handleKeyboardEvents(&sdlParameters);
+				handleKeyboardEvents(&sdlParameters, &gameResources);
+			}
+			else if (sdlParameters.event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				HandleMouseEvents(&sdlParameters, &gameResources);
 			}
 		}
 
@@ -48,6 +53,12 @@ int main(void)
 		{
 		case GAME_MAIN_MENU:
 			showMainMenu(&gameResources, &sdlParameters);
+			break;
+		case GAME_RUNNING:
+			handleGameplay(&sdlParameters, &gameResources);
+			break;
+		case GAME_LEADERBOARD:
+			handleLeaderboard(&sdlParameters, &gameResources);
 			break;
 		default:
 			break;
@@ -63,5 +74,6 @@ int main(void)
 
 	SDL_End(&sdlParameters);
 	UnloadGameResources(&gameResources);
+	if (DEBUG) printf("[DEBUG INFO] Exiting program.\n");
 	return 0;
 }
