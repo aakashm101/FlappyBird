@@ -1,13 +1,17 @@
 # **Flappy Bird**
 A flappy bird game written in C programming language. Uses a powerful graphics library called SDL (Simple DirectMedia Layer) library.
-
-# **STATUS:** IN PROGRESS
+## **STATUS:** IN PROGRESS
+<br>
 
 # **Preview**
-<img src="./res/flappyBird.png">
+<img src="./res/flappyBird-MainMenu.png"> Main Menu </img>
+<br><br>
+<img src="./res/flappyBird-Gameplay.png"> Gameplay </img>
+<br><br>
+<img src="./res/flappyBird-Leaderboards.png"> Gameplay </img>
+<br><br>
 
 # **Roadmap**
-* Add ability to switch from main menu to game
 * Add the main game logic
 * Add ability to switch game to pause state and handle pause state
 * Add ability to switch game from pause state to main menu
