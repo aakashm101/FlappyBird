@@ -8,7 +8,7 @@ A flappy bird game written in C programming language. Uses a powerful graphics l
 <br><br>
 <img src="./res/flappyBird-Gameplay.png"> Gameplay </img>
 <br><br>
-<img src="./res/flappyBird-Leaderboards.png"> Gameplay </img>
+<img src="./res/flappyBird-Leaderboards.png"> Leaderboards </img>
 <br><br>
 
 # **Roadmap**
