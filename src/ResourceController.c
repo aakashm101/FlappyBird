@@ -41,14 +41,14 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	const int LEADERBOARD_BUTTON_WIDTH = 52;
 	const int LEADERBOARD_BUTTON_HEIGHT = 30;
 
-	// Scale the background image to the window size without affecting aspect ratio
+	// Scale the background image to the window size without affecting dimensions of floor image
 	const double BACKGROUND_WIDTH_HEIGHT_RATIO = (double) BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
 	const int SCALED_BACKGROUND_HEIGHT = WINDOW_HEIGHT;
 	const int SCALED_BACKGROUND_WIDTH = ceil(SCALED_BACKGROUND_HEIGHT * BACKGROUND_WIDTH_HEIGHT_RATIO);
 
-	// Scale the floor image to the window height / 6 without affecting aspect ratio
+	// Scale the floor image to the window height / 5 without affecting dimensions of the floor image
 	const double FLOOR_WIDTH_HEIGHT_RATIO = (double)FLOOR_WIDTH / FLOOR_HEIGHT;
-	const int SCALED_FLOOR_HEIGHT = (double)WINDOW_HEIGHT / 6;
+	const int SCALED_FLOOR_HEIGHT = ceil(WINDOW_HEIGHT / 5);
 	const int SCALED_FLOOR_WIDTH = ceil(SCALED_FLOOR_HEIGHT * FLOOR_WIDTH_HEIGHT_RATIO);
 
 	int backgroundImageCount;
@@ -129,7 +129,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.w = FLOOR_WIDTH;
 		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.h = FLOOR_HEIGHT;
 		gameResources->floorSpriteArray[floorSpriteIndex].destRect.x = (floorSpriteIndex == 0) ? 0 : gameResources->floorSpriteArray[floorSpriteIndex - 1].destRect.x + gameResources->floorSpriteArray[floorSpriteIndex - 1].destRect.w;	// Place the floors size by side
-		gameResources->floorSpriteArray[floorSpriteIndex].destRect.y = WINDOW_HEIGHT - ((double)WINDOW_HEIGHT / 6);
+		gameResources->floorSpriteArray[floorSpriteIndex].destRect.y = WINDOW_HEIGHT - ((double)WINDOW_HEIGHT / 5);
 		gameResources->floorSpriteArray[floorSpriteIndex].destRect.w = SCALED_FLOOR_WIDTH;
 		gameResources->floorSpriteArray[floorSpriteIndex].destRect.h = SCALED_FLOOR_HEIGHT;
 		ScaleSpriteToFitOnArea(
@@ -272,12 +272,15 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->topPillar->srcRect.x = 56;
 	gameResources->topPillar->srcRect.y = 324;
 	gameResources->topPillar->srcRect.w = 26;
-	gameResources->topPillar->srcRect.h = 162;
-	gameResources->topPillar->destRect.x = 0;
+	gameResources->topPillar->srcRect.h = 160;
+	gameResources->topPillar->destRect.x = -1;
 	gameResources->topPillar->destRect.y = 0;
 	gameResources->topPillar->destRect.w = gameResources->topPillar->srcRect.w;
 	gameResources->topPillar->destRect.h = gameResources->topPillar->srcRect.h;
-	ScaleSpriteToFitOnArea(gameResources->topPillar, WINDOW_WIDTH / 4, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2);
+	ScaleSpriteToFitOnArea(gameResources->topPillar, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT - gameResources->floorSpriteArray[0].destRect.h);
+	gameResources->topPillar->destRect.w /= 1.3;	// Reduce the width of the top pillar
+	gameResources->topPillar->destRect.x = WINDOW_WIDTH - gameResources->topPillar->destRect.w;	// Testing
+	gameResources->topPillar->destRect.y -= 500;	// Testing
 
 	// Set the srcRect and destRect and default values for sprite 'bottom_pillar' text from the tilemap
 	gameResources->bottomPillar = (Sprite*)malloc(sizeof(Sprite));
@@ -291,20 +294,17 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->bottomPillar->xTranslation = 0;
 	gameResources->bottomPillar->yTranslation = 0;
 	gameResources->bottomPillar->srcRect.x = 84;
-	gameResources->bottomPillar->srcRect.y = 324;
+	gameResources->bottomPillar->srcRect.y = 322;
 	gameResources->bottomPillar->srcRect.w = 26;
-	gameResources->bottomPillar->srcRect.h = 162;
-	gameResources->bottomPillar->destRect.x = 0;
+	gameResources->bottomPillar->srcRect.h = 160;
+	gameResources->bottomPillar->destRect.x = -1;
 	gameResources->bottomPillar->destRect.y = 0;
 	gameResources->bottomPillar->destRect.w = gameResources->bottomPillar->srcRect.w;
 	gameResources->bottomPillar->destRect.h = gameResources->bottomPillar->srcRect.h;
-	ScaleSpriteToFitOnArea(
-		gameResources->bottomPillar,
-		WINDOW_WIDTH - (WINDOW_WIDTH / 4),
-		0,
-		WINDOW_WIDTH / 10, 
-		WINDOW_HEIGHT / 2);
-	gameResources->bottomPillar->destRect.y = WINDOW_HEIGHT - gameResources->floorSpriteArray[0].destRect.h - gameResources->bottomPillar->destRect.h;
+	ScaleSpriteToFitOnArea(gameResources->bottomPillar, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT - gameResources->floorSpriteArray[0].destRect.h);
+	gameResources->bottomPillar->destRect.w /= 1.3;		// Reduce the width of the bottom pillar
+	gameResources->bottomPillar->destRect.x = WINDOW_WIDTH - gameResources->bottomPillar->destRect.w;	// Testing
+	gameResources->bottomPillar->destRect.y += 500;		// Testing
 
 	// Allocate memory for 'Coming soon' Text
 	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);

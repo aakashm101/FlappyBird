@@ -10,6 +10,28 @@ void handleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 	}
 	ParallaxEffect(gameResources->backgroundSpriteArray, gameResources->backgroundSpriteCount, &(gameResources->backgroundLeftEndIndex), &(gameResources->backgroundRightEndIndex));
 
+
+	// Testing: Moving two pillars on the screen
+	if (gameResources->topPillar->destRect.x > 0)
+	{
+		(gameResources->topPillar->destRect.x) -= 1;
+	}
+	else
+	{
+		gameResources->topPillar->destRect.x = sdlParameters->dm.w;
+	}
+	
+	if (gameResources->bottomPillar->destRect.x > 0)
+	{
+		(gameResources->bottomPillar->destRect.x) -= 1;
+	}
+	else
+	{
+		gameResources->bottomPillar->destRect.x = sdlParameters->dm.w;
+	}
+	CopySpriteToRenderer(gameResources->topPillar, sdlParameters, gameResources);
+	CopySpriteToRenderer(gameResources->bottomPillar, sdlParameters, gameResources);
+
 	// Display the floor and do parallax effect on the floor
 	for (int floorSpriteIndex = 0; floorSpriteIndex < gameResources->floorSpriteCount; floorSpriteIndex++)
 	{
@@ -17,10 +39,5 @@ void handleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 	}
 	ParallaxEffect(gameResources->floorSpriteArray, gameResources->floorSpriteCount, &(gameResources->floorLeftEndIndex), &(gameResources->floorRightEndIndex));
 
-	// Testing: Two pillars on the screen
-	CopySpriteToRenderer(gameResources->topPillar, sdlParameters, gameResources);
-	CopySpriteToRenderer(gameResources->bottomPillar, sdlParameters, gameResources);
-	
-	SDL_RenderCopy(sdlParameters->renderer, gameResources->comingSoonText->textTexture, NULL, &(gameResources->comingSoonText->destRect));
 	return;
 }
