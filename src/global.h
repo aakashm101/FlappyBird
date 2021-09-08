@@ -7,6 +7,7 @@ typedef struct _SdlParameters SdlParameters;
 typedef struct _GameResources GameResources;
 typedef struct _Text Text;
 typedef struct _Sprite Sprite;
+typedef struct _PillarPair PillarPair;
 
 extern int DEBUG;
 
@@ -41,6 +42,10 @@ typedef struct _GameResources
 	int floorSpriteCount;			// Used to store the number of floor images which can fit on screen (Parallax effect need multiple backgrounds)
 	int floorLeftEndIndex;			// Used to store the index of the floor image which is currently at the left end of the screen (Used for efficiently performing parallax effect)
 	int floorRightEndIndex;			// Used to store the index of the floor image which is currently at the right end of the screen (Used for efficiently performing parallax effect)
+	int pillarPairCount;			// Used to store the number of pillar pairs
+	int pillarPairsLeftEndIndex;	// Used to store the index of the pillar image which is currently at the left end of the screen (Used for efficiently performing parallax effect)
+	int pillarPairsRightEndIndex;	// Used to store the index of the pllar image which is currently at the right end of the screen (Used for efficiently performing parallax effect)
+	int distanceBetweenPillars;		// Distance between pillars (in number of pixels)
 	GameState gameState;			// Stores the game state (Useful to switch between states like main menu, gameplay etc)
 	SDL_Texture* tileMap;			// Pointer to the tilemap (Assigned when LoadResources() is called)
 	Sprite* backgroundSpriteArray;	// Pointer to the array of backgrounds (Assigned when LoadResources() is called)
@@ -48,11 +53,10 @@ typedef struct _GameResources
 	Sprite* flappyBirdLogo;			// Pointer to flappy bird logo (Assigned when LoadResources() is called)
 	Sprite* playButton;				// Pointer to play button (Assigned when LoadResources() is called)
 	Sprite* leaderboardButton;		// Pointer to leaderboard button (Assigned when LoadResources() is called)
-	Sprite* topPillar;				// Pointer to topPillar (Assigned when LoadResources() is called)
-	Sprite* bottomPillar;			// Pointer to bottomPillar (Assigned when LoadResources() is called)
 	Sprite* getReady;				// Pointer to sprite with text 'Get Ready'
 	Sprite* gameOver;				// Pointer to sprite with text 'Game Over'
 	Text* comingSoonText;			// Pointer to 'Coming soon' text (Assigned when LoadResources() is called)
+	PillarPair* pillarPairs;		// Pointer to pillar pairs
 } GameResources;
 
 typedef struct _Text 
@@ -73,3 +77,9 @@ typedef struct _Sprite
 	SDL_Rect srcRect;	// The source rect which contains coordinates, width and height of the tilemap from which the pixels will be copied from and rendered on the renderer
 	SDL_Rect destRect;	// The destination rect which contains coordinates, width and height of the sprite which will be used while rendering it
 }Sprite;
+
+typedef struct _PillarPair
+{
+	Sprite* topPillar;		// Pointer to the sprite of the top pillar
+	Sprite* bottomPillar;	// Pointer to the sprite of the bottom pillar
+} PillarPair;
