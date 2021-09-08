@@ -3,6 +3,9 @@ A flappy bird game written in C programming language. Uses a powerful graphics l
 ## **STATUS:** IN PROGRESS
 <br>
 
+# **Sources**
+Tileset: https://www.spriters-resource.com/mobile/flappybird/sheet/59894/
+
 # **Preview**
 <img src="./res/flappyBird-MainMenu.png"> Main Menu </img>
 <br><br>
