@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 #define SDL_MAIN_DEFINED
 #include <SDL2/SDL.h>
 #include "global.h"
@@ -9,13 +10,15 @@
 #include "MouseController.h"
 #include "ResourceController.h"
 #include "MainMenuController.h"
+#include "GameplayController.h"
+#include "LeaderboardController.h"
 
 static SdlParameters sdlParameters;
 static GameResources gameResources;
 
 int DEBUG = 1;
 
-int main(void)
+int main()
 {
 	if (SDL_Start(&sdlParameters) != 0)
 	{
@@ -26,6 +29,7 @@ int main(void)
 		return -1;
 	}
 	
+	srand(time(NULL));	// Use time as seed
 	if (LoadGameResources(&gameResources, &sdlParameters) != 0)
 	{
 		SDL_End(&sdlParameters);

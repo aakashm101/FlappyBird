@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "MainMenuController.h"
 #include "SDLController.h"
 #include "ResourceController.h"

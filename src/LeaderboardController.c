@@ -1,5 +1,6 @@
 #include "LeaderboardController.h"
 #include "SDLController.h"
+#include "ResourceController.h"
 
 void handleLeaderboard(SdlParameters* sdlParameters, GameResources* gameResources)
 {

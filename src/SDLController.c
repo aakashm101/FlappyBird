@@ -53,7 +53,7 @@ int SDL_Start(SdlParameters* sdlParameters)
 	}
 	if (DEBUG) printf("[DEBUG INFO] SDL_CreateWindow() successful.\n");
 
-	sdlParameters->renderer = SDL_CreateRenderer(sdlParameters->window, -1, SDL_RENDERER_ACCELERATED);
+	sdlParameters->renderer = SDL_CreateRenderer(sdlParameters->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (!sdlParameters->renderer)
 	{
 		printf("[ERROR] SDL_CreateRenderer() failed!\n");
@@ -96,5 +96,10 @@ void CopySpriteToRenderer(Sprite* sprite, SdlParameters* const sdlParameters, co
 		sprite->angle,
 		NULL,
 		SDL_FLIP_NONE);
+	
+	if (DEBUG)
+	{
+		SDL_RenderDrawRect(sdlParameters->renderer, &(sprite->destRect));
+	}
 	return;
 }

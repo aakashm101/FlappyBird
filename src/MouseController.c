@@ -19,14 +19,15 @@ void HandleMouseEvents(SdlParameters* sdlParameters, GameResources* gameResource
 		if (DEBUG) printf("[DEBUG INFO] Mouse button pressed. X = %d, Y = %d.\n", x, y);
 	}
 
+	// If the user is in the main menu
 	if (gameResources->gameState == GAME_MAIN_MENU)
 	{
-		if (clickedOnSprite(gameResources->playButton, x, y))
+		if (clickedOnSprite(gameResources->playButton, x, y))	// If user clicks on play button, start the game
 		{
 			if (DEBUG) printf("[DEBUG INFO] Mouse clicked on play button!\n");
 			gameResources->gameState = GAME_RUNNING;
 		}
-		else if (clickedOnSprite(gameResources->leaderboardButton, x, y))
+		else if (clickedOnSprite(gameResources->leaderboardButton, x, y))	// If user clicks on leaderboard button, display the scores
 		{
 			if (DEBUG) printf("[DEBUG INFO] Mouse clicked on leaderboards button!\n");
 			gameResources->gameState = GAME_LEADERBOARD;
