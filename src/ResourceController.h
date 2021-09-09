@@ -13,4 +13,5 @@ void DestroyText(Text* text);
 PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* const sdlParameters, int pairCount);
 void DestroyPillarPair(PillarPair* pillarPair);
 void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameResources, const SdlParameters* const sdlParameters);
+void InvertSpriteVerticalForces(Sprite* sprite, int durationInMilliSeconds, SdlParameters* sdlParameters, GameResources* gameResources);
 void ParallaxEffect(Sprite* sprites, int spriteCount, int* const leftEndIndex, int* const rightEndIndex);

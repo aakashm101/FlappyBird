@@ -49,14 +49,14 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	const int BIRD_HEIGHT = 14;
 
 	// Scale the background image to the window size without affecting dimensions of floor image
-	const float BACKGROUND_WIDTH_HEIGHT_RATIO = (float) BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
+	const float BACKGROUND_WIDTH_HEIGHT_RATIO = (float)BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
 	const int SCALED_BACKGROUND_HEIGHT = WINDOW_HEIGHT;
-	const int SCALED_BACKGROUND_WIDTH = ceil(SCALED_BACKGROUND_HEIGHT * BACKGROUND_WIDTH_HEIGHT_RATIO);
+	const int SCALED_BACKGROUND_WIDTH = ceil((double)SCALED_BACKGROUND_HEIGHT * BACKGROUND_WIDTH_HEIGHT_RATIO);
 
 	// Scale the floor image to the window height / 5 without affecting dimensions of the floor image
 	const float FLOOR_WIDTH_HEIGHT_RATIO = (float)FLOOR_WIDTH / FLOOR_HEIGHT;
-	const int SCALED_FLOOR_HEIGHT = ceil(WINDOW_HEIGHT / 5);
-	const int SCALED_FLOOR_WIDTH = ceil(SCALED_FLOOR_HEIGHT * FLOOR_WIDTH_HEIGHT_RATIO);
+	const int SCALED_FLOOR_HEIGHT = ceil((double)WINDOW_HEIGHT / 5);
+	const int SCALED_FLOOR_WIDTH = ceil((double)SCALED_FLOOR_HEIGHT * FLOOR_WIDTH_HEIGHT_RATIO);
 
 	int backgroundImageCount;
 	int floorImageCount;
@@ -77,7 +77,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 
 	// Used to store how many background images will fit inside the window (Using multiple scrolling background images to create parallax effect)
 	// Use one more background image (It can be partially outside the current window) to create the parallax effect
-	backgroundImageCount = ceil((float)WINDOW_WIDTH / SCALED_BACKGROUND_WIDTH);
+	backgroundImageCount = ceil((double)WINDOW_WIDTH / SCALED_BACKGROUND_WIDTH);
 	backgroundImageCount = backgroundImageCount + 1;
 	gameResources->backgroundSpriteCount = backgroundImageCount;
 	gameResources->backgroundLeftEndIndex = 0;
@@ -96,6 +96,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].angle = 0;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].xTranslation = gameResources->parallaxGlobalXTranslation;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].yTranslation = 0;
+		gameResources->backgroundSpriteArray[backgroundSpriteIndex].gravity = 0;
+		gameResources->backgroundSpriteArray[backgroundSpriteIndex].maxGravity = 0;
+		gameResources->backgroundSpriteArray[backgroundSpriteIndex].lift = 0;
+		gameResources->backgroundSpriteArray[backgroundSpriteIndex].maxLift = 0;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.x = BACKGROUND_XPOS;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.y = BACKGROUND_YPOS;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.w = BACKGROUND_WIDTH;
@@ -115,7 +119,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 
 	// Used to store how many floor images will fit inside the window (Using multiple scrolling floor images to create parallax effect)
 	// Use one more floor image (It can be partially outside the current window) to create the parallax effect
-	floorImageCount = ceil((float)WINDOW_WIDTH / SCALED_FLOOR_WIDTH);
+	floorImageCount = ceil((double)WINDOW_WIDTH / SCALED_FLOOR_WIDTH);
 	floorImageCount = floorImageCount + 1;
 	gameResources->floorSpriteCount = floorImageCount;
 	gameResources->floorLeftEndIndex = 0;
@@ -134,6 +138,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		gameResources->floorSpriteArray[floorSpriteIndex].angle = 0;
 		gameResources->floorSpriteArray[floorSpriteIndex].xTranslation = gameResources->parallaxGlobalXTranslation;
 		gameResources->floorSpriteArray[floorSpriteIndex].yTranslation = 0;
+		gameResources->floorSpriteArray[floorSpriteIndex].gravity = 0;
+		gameResources->floorSpriteArray[floorSpriteIndex].maxGravity = 0;
+		gameResources->floorSpriteArray[floorSpriteIndex].lift = 0;
+		gameResources->floorSpriteArray[floorSpriteIndex].maxLift = 0;
 		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.x = FLOOR_XPOS;
 		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.y = FLOOR_YPOS;
 		gameResources->floorSpriteArray[floorSpriteIndex].srcRect.w = FLOOR_WIDTH;
@@ -163,6 +171,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->flappyBirdLogo->angle = 0;
 	gameResources->flappyBirdLogo->xTranslation = 0;
 	gameResources->flappyBirdLogo->yTranslation = 0;
+	gameResources->flappyBirdLogo->gravity = 0;
+	gameResources->flappyBirdLogo->maxGravity = 0;
+	gameResources->flappyBirdLogo->lift = 0;
+	gameResources->flappyBirdLogo->maxLift = 0;
 	gameResources->flappyBirdLogo->srcRect.x = FLAPPY_BIRD_LOGO_XPOS;
 	gameResources->flappyBirdLogo->srcRect.y = FLAPPY_BIRD_LOGO_YPOS;
 	gameResources->flappyBirdLogo->srcRect.w = FLAPPY_BIRD_LOGO_WIDTH;
@@ -171,7 +183,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->flappyBirdLogo->destRect.y = 0;
 	gameResources->flappyBirdLogo->destRect.w = FLAPPY_BIRD_LOGO_WIDTH;
 	gameResources->flappyBirdLogo->destRect.h = FLAPPY_BIRD_LOGO_HEIGHT;
-	ScaleSpriteToFitOnArea(gameResources->flappyBirdLogo, 0, 0, WINDOW_WIDTH, (float)WINDOW_HEIGHT / 3);
+	ScaleSpriteToFitOnArea(gameResources->flappyBirdLogo, 0, 0, WINDOW_WIDTH, ceil((double)WINDOW_HEIGHT / 3));
 	CenterSpriteHorizontallyOnScreen(gameResources->flappyBirdLogo, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->flappyBirdLogo, 0.8);
 	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->flappyBirdLogo->name);
@@ -187,14 +199,18 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->playButton->angle = 0;
 	gameResources->playButton->xTranslation = 0;
 	gameResources->playButton->yTranslation = 0;
+	gameResources->playButton->gravity = 0;
+	gameResources->playButton->maxGravity = 0;
+	gameResources->playButton->lift = 0;
+	gameResources->playButton->maxLift = 0;
 	gameResources->playButton->srcRect.x = PLAY_BUTTON_XPOS;
 	gameResources->playButton->srcRect.y = PLAY_BUTTON_YPOS;
 	gameResources->playButton->srcRect.w = PLAY_BUTTON_WIDTH;
 	gameResources->playButton->srcRect.h = PLAY_BUTTON_HEIGHT;
 	gameResources->playButton->destRect.x = 0;
-	gameResources->playButton->destRect.y = ((float)WINDOW_HEIGHT / 2) + PLAY_BUTTON_HEIGHT;
-	gameResources->playButton->destRect.w = (float)WINDOW_WIDTH / 2;
-	gameResources->playButton->destRect.h = (float)WINDOW_HEIGHT / 2;
+	gameResources->playButton->destRect.y = (double)WINDOW_HEIGHT / 2 + PLAY_BUTTON_HEIGHT;
+	gameResources->playButton->destRect.w = (double)WINDOW_WIDTH / 2;
+	gameResources->playButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->playButton, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->playButton->name);
 
@@ -209,14 +225,18 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->leaderboardButton->angle = 0;
 	gameResources->leaderboardButton->xTranslation = 0;
 	gameResources->leaderboardButton->yTranslation = 0;
+	gameResources->leaderboardButton->gravity = 0;
+	gameResources->leaderboardButton->maxGravity = 0;
+	gameResources->leaderboardButton->lift = 0;
+	gameResources->leaderboardButton->maxLift = 0;
 	gameResources->leaderboardButton->srcRect.x = LEADERBOARD_BUTTON_XPOS;
 	gameResources->leaderboardButton->srcRect.y = LEADERBOARD_BUTTON_YPOS;
 	gameResources->leaderboardButton->srcRect.w = LEADERBOARD_BUTTON_WIDTH;
 	gameResources->leaderboardButton->srcRect.h = LEADERBOARD_BUTTON_HEIGHT;
-	gameResources->leaderboardButton->destRect.x = (float)WINDOW_WIDTH / 2;
-	gameResources->leaderboardButton->destRect.y = ((float)WINDOW_HEIGHT / 2) + LEADERBOARD_BUTTON_HEIGHT;
-	gameResources->leaderboardButton->destRect.w = (float)WINDOW_WIDTH / 2;
-	gameResources->leaderboardButton->destRect.h = (float)WINDOW_HEIGHT / 2;
+	gameResources->leaderboardButton->destRect.x = (double)WINDOW_WIDTH / 2;
+	gameResources->leaderboardButton->destRect.y = (double)WINDOW_HEIGHT / 2 + LEADERBOARD_BUTTON_HEIGHT;
+	gameResources->leaderboardButton->destRect.w = (double)WINDOW_WIDTH / 2;
+	gameResources->leaderboardButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->leaderboardButton, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->leaderboardButton->name);
 
@@ -232,15 +252,19 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->getReady->angle = 0;
 	gameResources->getReady->xTranslation = 0;
 	gameResources->getReady->yTranslation = 0;
+	gameResources->getReady->gravity = 0;
+	gameResources->getReady->maxGravity = 0;
+	gameResources->getReady->lift = 0;
+	gameResources->getReady->maxLift = 0;
 	gameResources->getReady->srcRect.x = 294;
 	gameResources->getReady->srcRect.y = 58;
 	gameResources->getReady->srcRect.w = 94;
 	gameResources->getReady->srcRect.h = 28;
 	gameResources->getReady->destRect.x = 0;
-	gameResources->getReady->destRect.y = ceil((float)WINDOW_HEIGHT / 6);
+	gameResources->getReady->destRect.y = ceil((double)WINDOW_HEIGHT / 6);
 	gameResources->getReady->destRect.w = gameResources->getReady->srcRect.w;
 	gameResources->getReady->destRect.h = gameResources->getReady->srcRect.h;
-	ScaleSpriteToFitOnArea(gameResources->getReady, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 6);
+	ScaleSpriteToFitOnArea(gameResources->getReady, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 6);
 	CenterSpriteHorizontallyOnScreen(gameResources->getReady, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->getReady, 0.5);
 
@@ -256,15 +280,19 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->gameOver->angle = 0;
 	gameResources->gameOver->xTranslation = 0;
 	gameResources->gameOver->yTranslation = 0;
+	gameResources->gameOver->gravity = 0;
+	gameResources->gameOver->maxGravity = 0;
+	gameResources->gameOver->lift = 0;
+	gameResources->gameOver->maxLift = 0;
 	gameResources->gameOver->srcRect.x = 394;
 	gameResources->gameOver->srcRect.y = 58;
 	gameResources->gameOver->srcRect.w = 98;
 	gameResources->gameOver->srcRect.h = 28;
 	gameResources->gameOver->destRect.x = 0;
-	gameResources->gameOver->destRect.y = ceil((float)WINDOW_HEIGHT / 6);
+	gameResources->gameOver->destRect.y = ceil((double)WINDOW_HEIGHT / 6);
 	gameResources->gameOver->destRect.w = gameResources->gameOver->srcRect.w;
 	gameResources->gameOver->destRect.h = gameResources->gameOver->srcRect.h;
-	ScaleSpriteToFitOnArea(gameResources->gameOver, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 6);
+	ScaleSpriteToFitOnArea(gameResources->gameOver, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 6);
 	CenterSpriteHorizontallyOnScreen(gameResources->gameOver, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->gameOver, 0.5);
 
@@ -279,14 +307,19 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->bird->angle = 0;
 	gameResources->bird->xTranslation = 0;
 	gameResources->bird->yTranslation = 0;
+	gameResources->bird->gravity = 1;
+	gameResources->bird->maxGravity = 4;
+	gameResources->bird->lift = 1;
+	gameResources->bird->maxLift = 3;
 	gameResources->bird->srcRect.x = BIRD_XPOS;
 	gameResources->bird->srcRect.y = BIRD_YPOS;
 	gameResources->bird->srcRect.w = BIRD_WIDTH;
 	gameResources->bird->srcRect.h = BIRD_HEIGHT;
 	gameResources->bird->destRect.x = 0;
 	gameResources->bird->destRect.y = 0;
-	gameResources->bird->destRect.w = BIRD_WIDTH * ceil(WINDOW_HEIGHT / 200);	// Dynamically scale the bird sprite based on window height
-	gameResources->bird->destRect.h = BIRD_HEIGHT * ceil(WINDOW_HEIGHT / 200);	// Dynamically scale the bird sprite based on window height
+	gameResources->bird->destRect.w = BIRD_WIDTH * (WINDOW_HEIGHT / 200);	// Dynamically scale the bird sprite based on window height
+	gameResources->bird->destRect.h = BIRD_HEIGHT * (WINDOW_HEIGHT / 200);	// Dynamically scale the bird sprite based on window height
+	CenterSpriteVerticallyOnScreen(gameResources->bird, sdlParameters);
 
 	// Allocate memory for 'Coming soon' Text
 	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);
@@ -301,7 +334,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->pillarPairCount = 5;
 	gameResources->pillarPairsLeftEndIndex = 0;
 	gameResources->pillarPairsRightEndIndex = gameResources->pillarPairCount - 1;
-	gameResources->distanceBetweenPillars = ceil((float)WINDOW_WIDTH / 5);
+	gameResources->distanceBetweenPillars = ceil((double)WINDOW_WIDTH / 5);
 	gameResources->pillarPairs = CreatePillarPair(gameResources, sdlParameters, gameResources->pillarPairCount);
 	if (!gameResources->pillarPairs)
 	{
@@ -535,6 +568,10 @@ PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* 
 		pillarPair[pillarPairIndex].topPillar->angle = 0;
 		pillarPair[pillarPairIndex].topPillar->xTranslation = gameResources->parallaxGlobalXTranslation;
 		pillarPair[pillarPairIndex].topPillar->yTranslation = 0;
+		pillarPair[pillarPairIndex].topPillar->gravity = 0;
+		pillarPair[pillarPairIndex].topPillar->maxGravity = 0;
+		pillarPair[pillarPairIndex].topPillar->lift = 0;
+		pillarPair[pillarPairIndex].topPillar->maxLift = 0;
 		pillarPair[pillarPairIndex].topPillar->srcRect.x = PILLAR_SRCRECT_XPOS;
 		pillarPair[pillarPairIndex].topPillar->srcRect.y = PILLAR_SRCRECT_YPOS;
 		pillarPair[pillarPairIndex].topPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
@@ -568,6 +605,10 @@ PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* 
 		pillarPair[pillarPairIndex].bottomPillar->angle = 180;
 		pillarPair[pillarPairIndex].bottomPillar->xTranslation = gameResources->parallaxGlobalXTranslation;
 		pillarPair[pillarPairIndex].bottomPillar->yTranslation = 0;
+		pillarPair[pillarPairIndex].bottomPillar->gravity = 0;
+		pillarPair[pillarPairIndex].bottomPillar->maxGravity = 0;
+		pillarPair[pillarPairIndex].bottomPillar->lift = 0;
+		pillarPair[pillarPairIndex].bottomPillar->maxLift = 0;
 		pillarPair[pillarPairIndex].bottomPillar->srcRect.x = PILLAR_SRCRECT_XPOS;
 		pillarPair[pillarPairIndex].bottomPillar->srcRect.y = PILLAR_SRCRECT_YPOS;
 		pillarPair[pillarPairIndex].bottomPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
@@ -635,24 +676,45 @@ void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameResources,
 	pillarCapitalheight = gameResources->pillarCapitalHeight;
 	pillarPairMinimumSpacing = gameResources->pillarPairMinimumSpacing;
 
-	// Calculate random pillar height for top pillar
+	// Calculate random pillar height for top pillar and set the yPosition of the top pillar
 	min = pillarCapitalheight;
-	max = windowHeight - ((2 * pillarCapitalheight) + pillarPairMinimumSpacing + floorHeight);
-	randomHeight = rand() % (max + 1 - min) + min;
+	max = (2 * pillarCapitalheight) + pillarPairMinimumSpacing + floorHeight;
+	randomHeight = rand() % max;
 	pillarPair->topPillar->destRect.y = (-1 * topPillarheight) + randomHeight;
 	
 	// Prevent the pillars from going completely out of the window
-	if (pillarPair->topPillar->destRect.y + topPillarheight < min)
+	if ((pillarPair->topPillar->destRect.y + topPillarheight) < min)
 	{
-		pillarPair->topPillar->destRect.y = (-1 * pillarPair->topPillar->destRect.y) + min;
+		pillarPair->topPillar->destRect.y = (-1 * pillarPair->topPillar->destRect.h) + min;
 	}
-	else if (pillarPair->topPillar->destRect.y + topPillarheight > max)
+	else if ((pillarPair->topPillar->destRect.y + topPillarheight) > max)
 	{
-		pillarPair->topPillar->destRect.y = (-1 * pillarPair->topPillar->destRect.y) + max;
+		pillarPair->topPillar->destRect.y = (-1 * pillarPair->topPillar->destRect.h) + max;
 	}
 
-	// Calculate random pillar height for bottom pillar
+	// Set the yPosition for the bottom pillar according to the yPosition of the top pillar
 	pillarPair->bottomPillar->destRect.y = pillarPair->topPillar->destRect.y + topPillarheight + pillarPairMinimumSpacing;
+
+	return;
+}
+
+// Used to invert the gravity and lift for the sprite for a certain number of milliseconds
+void InvertSpriteVerticalForces(Sprite* sprite, int durationInMilliSeconds, SdlParameters* sdlParameters, GameResources* gameResources)
+{
+	int gravity, lift;
+
+	// Store the values before inverting, because we need to restore them after durationInMilliSeconds time
+	gravity = sprite->gravity;
+	lift = sprite->lift;
+
+	// Swap the gravity and lift values
+	sprite->gravity = lift;
+	sprite->lift = gravity;
+
+	// TODO: Implement the logic to swap the gravity and lift forces for a certain time
+
+	sprite->gravity = gravity;
+	sprite->lift = lift;
 
 	return;
 }

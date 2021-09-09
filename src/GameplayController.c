@@ -46,6 +46,31 @@ void handleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 	}
 
 	// Copy the bird sprite to the renderer
+	if (gameResources->bird->destRect.y + gameResources->bird->destRect.h + gameResources->floorSpriteArray[0].destRect.h < sdlParameters->dm.h)
+	{
+		gameResources->bird->yTranslation += gameResources->bird->gravity;
+		gameResources->bird->yTranslation -= gameResources->bird->lift;
+		
+		gameResources->bird->destRect.y += gameResources->bird->yTranslation;
+		if (gameResources->bird->destRect.y + gameResources->bird->destRect.h + gameResources->floorSpriteArray[0].destRect.h > sdlParameters->dm.h)
+		{
+			gameResources->bird->destRect.y = sdlParameters->dm.h - (gameResources->bird->destRect.h + gameResources->floorSpriteArray[0].destRect.h);
+		}
+		else if (gameResources->bird->destRect.y < 0)
+		{
+			gameResources->bird->destRect.y = 0;
+		}
+
+		if (gameResources->bird->gravity < gameResources->bird->maxGravity)
+		{
+			(gameResources->bird->gravity)++;
+		}
+		if (gameResources->bird->lift < gameResources->bird->maxLift)
+		{
+			(gameResources->bird->lift)++;
+		}
+	}
+
 	CopySpriteToRenderer(gameResources->bird, sdlParameters, gameResources);
 
 	// Display the floor and do parallax effect on the floor

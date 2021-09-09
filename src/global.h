@@ -78,6 +78,10 @@ typedef struct _Sprite
 	int angle;			// Angle in degrees
 	int xTranslation;	// The amount of pixels to move the sprite along the X-axis
 	int yTranslation;	// The amount of pixels to move the sprite along the Y-axis
+	int gravity;		// This value will be added to yTranslation of the sprite every frame
+	int lift;			// This value will be subtracted from yTranslation of the sprite every frame
+	int maxGravity;		// This value is used to limit the gravity value
+	int maxLift;		// This value is used to limit the lift value
 	SDL_Rect srcRect;	// The source rect which contains coordinates, width and height of the tilemap from which the pixels will be copied from and rendered on the renderer
 	SDL_Rect destRect;	// The destination rect which contains coordinates, width and height of the sprite which will be used while rendering it
 }Sprite;

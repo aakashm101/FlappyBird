@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "KeyboardController.h"
+#include "ResourceController.h"
 
 void handleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResources)
 {
@@ -11,6 +12,12 @@ void handleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResou
 		{
 		case SDLK_ESCAPE:
 			sdlParameters->mainLoopRunning = false;
+			break;
+		case SDLK_SPACE:
+			if (gameResources->gameState == GAME_RUNNING)
+			{
+				InvertSpriteVerticalForces(gameResources->bird, 2000, sdlParameters, gameResources);
+			}
 			break;
 		default:
 			printf("[ERROR] No logic provided to handle when key %s is pressed!\n", SDL_GetKeyName(sdlParameters->event.key.keysym.sym));
