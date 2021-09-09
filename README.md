@@ -1,10 +1,10 @@
 # **Flappy Bird**
-A flappy bird game written in C programming language. Uses a powerful graphics library called SDL (Simple DirectMedia Layer) library.
-## **STATUS:** IN PROGRESS
-<br>
+A flappy bird game written in C programming language. Uses a powerful graphics library called SDL (Simple DirectMedia Layer) library. Designed to adapt to different screen resolutions. Tested and verified to work correctly on displays with resolutions from 800x600 upto 1920x1080.
 
-# **Sources**
-Tileset: https://www.spriters-resource.com/mobile/flappybird/sheet/59894/
+**STATUS:** IN PROGRESS
+
+# **Resources**
+* Tileset: https://www.spriters-resource.com/mobile/flappybird/sheet/59894/
 
 # **Preview**
 <img src="./res/flappyBird-MainMenu.png"> Main Menu </img>
