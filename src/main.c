@@ -70,7 +70,7 @@ int main()
 			showMainMenu(&gameResources, &sdlParameters);
 			break;
 		case GAME_RUNNING:
-			handleGameplay(&sdlParameters, &gameResources);
+			HandleGameplay(&sdlParameters, &gameResources);
 			break;
 		case GAME_LEADERBOARD:
 			handleLeaderboard(&sdlParameters, &gameResources);

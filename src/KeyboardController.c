@@ -5,18 +5,19 @@
 
 void handleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResources)
 {
-	if (sdlParameters->event.type == SDL_KEYDOWN)	// If a key is pressed down (Oneshot)
+	if (sdlParameters->event.type == SDL_KEYDOWN)	// If a key is pressed down (Oneshot). Need to add debounce logic.
 	{
 		if (DEBUG) printf("[DEBUG INFO] SDL_KEYDOWN event occurred. KEY: %s\n", SDL_GetKeyName(sdlParameters->event.key.keysym.sym));
 		switch (sdlParameters->event.key.keysym.sym)
 		{
 		case SDLK_ESCAPE:
 			sdlParameters->mainLoopRunning = false;
-			break;
+			return;
 		case SDLK_SPACE:
 			if (gameResources->gameState == GAME_RUNNING)
 			{
-				InvertSpriteVerticalForces(gameResources->bird, 2000, sdlParameters, gameResources);
+				gameResources->bird->destRect.y -= gameResources->bird->gravity * 12;
+				gameResources->bird->gravity = 0;
 			}
 			break;
 		default:

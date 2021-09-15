@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <SDL2/SDL_image.h>
 #include "global.h"
 #include "ResourceController.h"
@@ -308,9 +309,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->bird->xTranslation = 0;
 	gameResources->bird->yTranslation = 0;
 	gameResources->bird->gravity = 1;
-	gameResources->bird->maxGravity = 4;
+	gameResources->bird->maxGravity = sdlParameters->dm.h / 190.0;
 	gameResources->bird->lift = 1;
-	gameResources->bird->maxLift = 3;
+	gameResources->bird->maxLift = 1;
 	gameResources->bird->srcRect.x = BIRD_XPOS;
 	gameResources->bird->srcRect.y = BIRD_YPOS;
 	gameResources->bird->srcRect.w = BIRD_WIDTH;
@@ -430,7 +431,7 @@ void UnloadGameResources(GameResources* gameResources)
 	return;
 }
 
-Text* CreateText(const char* text, const int textSize, const SdlParameters* const sdlParameters, SDL_Color fontColor)
+static Text* CreateText(const char* text, const int textSize, const SdlParameters* const sdlParameters, SDL_Color fontColor)
 {
 	TTF_Font* font;
 
@@ -483,7 +484,7 @@ Text* CreateText(const char* text, const int textSize, const SdlParameters* cons
 	return newText;
 }
 
-void DestroyText(Text* text)
+static void DestroyText(Text* text)
 {
 	if (!text)
 	{
@@ -511,7 +512,7 @@ void DestroyText(Text* text)
 	return;
 }
 
-PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* const sdlParameters, int pairCount)
+static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* const sdlParameters, int pairCount)
 {
 	if (!gameResources)
 	{
@@ -535,106 +536,109 @@ PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* 
 	int distanceBetweenPillars = gameResources->distanceBetweenPillars;
 
 	// Declare the variable
-	PillarPair* pillarPair = NULL;
+	PillarPair* pillarPairs = NULL;
 
 	// Allocate memory for the pillar pairs
-	pillarPair = (PillarPair*)calloc(sizeof(PillarPair), pairCount);
-	if (!pillarPair)
+	pillarPairs = (PillarPair*)calloc(sizeof(PillarPair), pairCount);
+	if (!pillarPairs)
 	{
 		printf("[ERROR] Memory allocation failed for pillar pair!\n");
 		return NULL;
 	}
 	
 	// For each pillar pair, load the top pillar sprite and bottom pillar sprite
-	for (int pillarPairIndex = 0; pillarPairIndex < pairCount; pillarPairIndex++)
+	for (int pillarPairsIndex = 0; pillarPairsIndex < pairCount; pillarPairsIndex++)
 	{
 		// Create the top pillar and set default values
-		pillarPair[pillarPairIndex].topPillar = malloc(sizeof(Sprite));
-		if (!pillarPair[pillarPairIndex].topPillar)
+		pillarPairs[pillarPairsIndex].topPillar = malloc(sizeof(Sprite));
+		if (!pillarPairs[pillarPairsIndex].topPillar)
 		{
 			printf("[ERROR] Memory allocation failed for top pillar!\n");
 
 			// Deallocate memory for previous pillar pairs if the memory allocation for current pillar pair fails
-			for (int i = 0; i < pillarPairIndex; i++)
+			for (int i = 0; i < pillarPairsIndex; i++)
 			{
-				if(pillarPair[i].topPillar)
+				if(pillarPairs[i].topPillar)
 				{ 
-					free(pillarPair[i].topPillar);
+					free(pillarPairs[i].topPillar);
 				}
+				pillarPairs = NULL;
 			}
 			return NULL;
 		}
-		pillarPair[pillarPairIndex].topPillar->name = "top_pillar";
-		pillarPair[pillarPairIndex].topPillar->angle = 0;
-		pillarPair[pillarPairIndex].topPillar->xTranslation = gameResources->parallaxGlobalXTranslation;
-		pillarPair[pillarPairIndex].topPillar->yTranslation = 0;
-		pillarPair[pillarPairIndex].topPillar->gravity = 0;
-		pillarPair[pillarPairIndex].topPillar->maxGravity = 0;
-		pillarPair[pillarPairIndex].topPillar->lift = 0;
-		pillarPair[pillarPairIndex].topPillar->maxLift = 0;
-		pillarPair[pillarPairIndex].topPillar->srcRect.x = PILLAR_SRCRECT_XPOS;
-		pillarPair[pillarPairIndex].topPillar->srcRect.y = PILLAR_SRCRECT_YPOS;
-		pillarPair[pillarPairIndex].topPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
-		pillarPair[pillarPairIndex].topPillar->srcRect.h = PILLAR_SRCRECT_HEIGHT;
+		pillarPairs[pillarPairsIndex].topPillar->name = "top_pillar";
+		pillarPairs[pillarPairsIndex].topPillar->angle = 0;
+		pillarPairs[pillarPairsIndex].topPillar->xTranslation = gameResources->parallaxGlobalXTranslation;
+		pillarPairs[pillarPairsIndex].topPillar->yTranslation = 0;
+		pillarPairs[pillarPairsIndex].topPillar->gravity = 0;
+		pillarPairs[pillarPairsIndex].topPillar->maxGravity = 0;
+		pillarPairs[pillarPairsIndex].topPillar->lift = 0;
+		pillarPairs[pillarPairsIndex].topPillar->maxLift = 0;
+		pillarPairs[pillarPairsIndex].topPillar->srcRect.x = PILLAR_SRCRECT_XPOS;
+		pillarPairs[pillarPairsIndex].topPillar->srcRect.y = PILLAR_SRCRECT_YPOS;
+		pillarPairs[pillarPairsIndex].topPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
+		pillarPairs[pillarPairsIndex].topPillar->srcRect.h = PILLAR_SRCRECT_HEIGHT;
 		
 		// If this is the first pillar, place it at a distance distanceBetweenPillars from the left side of the screen. If not, place it next to the previous pillar at a distance distanceBetweenPillars
-		pillarPair[pillarPairIndex].topPillar->destRect.x = 0;
-		pillarPair[pillarPairIndex].topPillar->destRect.y = 0;
-		pillarPair[pillarPairIndex].topPillar->destRect.w = PILLAR_SRCRECT_WIDTH;
-		pillarPair[pillarPairIndex].topPillar->destRect.h = PILLAR_SRCRECT_HEIGHT;
-		ScaleSpriteToFitOnArea(pillarPair[pillarPairIndex].topPillar, 0, 0, windowWidth, windowHeight - gameResources->floorSpriteArray[0].destRect.h);
-		pillarPair[pillarPairIndex].topPillar->destRect.x = (pillarPairIndex == 0) ? distanceBetweenPillars : pillarPair[pillarPairIndex - 1].topPillar->destRect.x + pillarPair[pillarPairIndex - 1].topPillar->destRect.w + distanceBetweenPillars;
+		pillarPairs[pillarPairsIndex].topPillar->destRect.x = 0;
+		pillarPairs[pillarPairsIndex].topPillar->destRect.y = 0;
+		pillarPairs[pillarPairsIndex].topPillar->destRect.w = PILLAR_SRCRECT_WIDTH;
+		pillarPairs[pillarPairsIndex].topPillar->destRect.h = PILLAR_SRCRECT_HEIGHT;
+		ScaleSpriteToFitOnArea(pillarPairs[pillarPairsIndex].topPillar, 0, 0, windowWidth, windowHeight - gameResources->floorSpriteArray[0].destRect.h);
+		pillarPairs[pillarPairsIndex].topPillar->destRect.x = (pillarPairsIndex == 0) ? distanceBetweenPillars : pillarPairs[pillarPairsIndex - 1].topPillar->destRect.x + pillarPairs[pillarPairsIndex - 1].topPillar->destRect.w + distanceBetweenPillars;
 
 		// Create the bottom pillar and set default values
-		pillarPair[pillarPairIndex].bottomPillar = malloc(sizeof(Sprite));
-		if (!pillarPair[pillarPairIndex].bottomPillar)
+		pillarPairs[pillarPairsIndex].bottomPillar = malloc(sizeof(Sprite));
+		if (!pillarPairs[pillarPairsIndex].bottomPillar)
 		{
 			printf("[ERROR] Memory allocation failed for bottom pillar!\n");
 
 			// Deallocate memory for previous pillar pairs if the memory allocation for current pillar pair fails
-			for (int i = 0; i < pillarPairIndex; i++)
+			for (int i = 0; i < pillarPairsIndex; i++)
 			{
-				if (pillarPair[i].bottomPillar)
+				if (pillarPairs[i].bottomPillar)
 				{
-					free(pillarPair[i].bottomPillar);
+					free(pillarPairs[i].topPillar);
+					free(pillarPairs[i].bottomPillar);
 				}
+				pillarPairs = NULL;
 			}
 			return NULL;
 		}
-		pillarPair[pillarPairIndex].bottomPillar->name = "bottom_pillar";
-		pillarPair[pillarPairIndex].bottomPillar->angle = 180;
-		pillarPair[pillarPairIndex].bottomPillar->xTranslation = gameResources->parallaxGlobalXTranslation;
-		pillarPair[pillarPairIndex].bottomPillar->yTranslation = 0;
-		pillarPair[pillarPairIndex].bottomPillar->gravity = 0;
-		pillarPair[pillarPairIndex].bottomPillar->maxGravity = 0;
-		pillarPair[pillarPairIndex].bottomPillar->lift = 0;
-		pillarPair[pillarPairIndex].bottomPillar->maxLift = 0;
-		pillarPair[pillarPairIndex].bottomPillar->srcRect.x = PILLAR_SRCRECT_XPOS;
-		pillarPair[pillarPairIndex].bottomPillar->srcRect.y = PILLAR_SRCRECT_YPOS;
-		pillarPair[pillarPairIndex].bottomPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
-		pillarPair[pillarPairIndex].bottomPillar->srcRect.h = PILLAR_SRCRECT_HEIGHT;
+		pillarPairs[pillarPairsIndex].bottomPillar->name = "bottom_pillar";
+		pillarPairs[pillarPairsIndex].bottomPillar->angle = 180;
+		pillarPairs[pillarPairsIndex].bottomPillar->xTranslation = gameResources->parallaxGlobalXTranslation;
+		pillarPairs[pillarPairsIndex].bottomPillar->yTranslation = 0;
+		pillarPairs[pillarPairsIndex].bottomPillar->gravity = 0;
+		pillarPairs[pillarPairsIndex].bottomPillar->maxGravity = 0;
+		pillarPairs[pillarPairsIndex].bottomPillar->lift = 0;
+		pillarPairs[pillarPairsIndex].bottomPillar->maxLift = 0;
+		pillarPairs[pillarPairsIndex].bottomPillar->srcRect.x = PILLAR_SRCRECT_XPOS;
+		pillarPairs[pillarPairsIndex].bottomPillar->srcRect.y = PILLAR_SRCRECT_YPOS;
+		pillarPairs[pillarPairsIndex].bottomPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
+		pillarPairs[pillarPairsIndex].bottomPillar->srcRect.h = PILLAR_SRCRECT_HEIGHT;
 
 		// If this is the first pillar, place it at a distance distanceBetweenPillars from the left side of the screen. If not, place it next to the previous pillar at a distance distanceBetweenPillars
-		pillarPair[pillarPairIndex].bottomPillar->destRect.x = 0;
-		pillarPair[pillarPairIndex].bottomPillar->destRect.y = 0;
-		pillarPair[pillarPairIndex].bottomPillar->destRect.w = PILLAR_SRCRECT_WIDTH;
-		pillarPair[pillarPairIndex].bottomPillar->destRect.h = PILLAR_SRCRECT_HEIGHT;
-		ScaleSpriteToFitOnArea(pillarPair[pillarPairIndex].bottomPillar, 0, 0, windowWidth, windowHeight - gameResources->floorSpriteArray[0].destRect.h);
-		pillarPair[pillarPairIndex].bottomPillar->destRect.x = (pillarPairIndex == 0) ? distanceBetweenPillars : pillarPair[pillarPairIndex - 1].bottomPillar->destRect.x + pillarPair[pillarPairIndex - 1].bottomPillar->destRect.w + distanceBetweenPillars;
+		pillarPairs[pillarPairsIndex].bottomPillar->destRect.x = 0;
+		pillarPairs[pillarPairsIndex].bottomPillar->destRect.y = 0;
+		pillarPairs[pillarPairsIndex].bottomPillar->destRect.w = PILLAR_SRCRECT_WIDTH;
+		pillarPairs[pillarPairsIndex].bottomPillar->destRect.h = PILLAR_SRCRECT_HEIGHT;
+		ScaleSpriteToFitOnArea(pillarPairs[pillarPairsIndex].bottomPillar, 0, 0, windowWidth, windowHeight - gameResources->floorSpriteArray[0].destRect.h);
+		pillarPairs[pillarPairsIndex].bottomPillar->destRect.x = (pillarPairsIndex == 0) ? distanceBetweenPillars : pillarPairs[pillarPairsIndex - 1].bottomPillar->destRect.x + pillarPairs[pillarPairsIndex - 1].bottomPillar->destRect.w + distanceBetweenPillars;
 
 		// Set random pillar heights
-		SetRandomPillarHeight(&(pillarPair[pillarPairIndex]), gameResources, sdlParameters);
+		SetRandomPillarHeight(&(pillarPairs[pillarPairsIndex]), gameResources, sdlParameters);
 	}
 	
 	// Get the capital height after resizing the pillars to fit the height of the window
-	gameResources->pillarCapitalHeight = pillarPair->topPillar[0].destRect.h * PILLAR_SRCRECT_CAPITAL_HEIGHT_RATIO;
+	gameResources->pillarCapitalHeight = pillarPairs->topPillar[0].destRect.h * PILLAR_SRCRECT_CAPITAL_HEIGHT_RATIO;
 	if(DEBUG) printf("[DEBUG INFO] Capital height of pillar = %d\n", gameResources->pillarCapitalHeight);
 
 	if (DEBUG) printf("[DEBUG INFO] Created %d 'Pillar pairs'\n", pairCount);
-	return pillarPair;
+	return pillarPairs;
 }
 
-void DestroyPillarPair(PillarPair* pillarPair)
+static void DestroyPillarPair(PillarPair* pillarPair)
 {
 	if (pillarPair->topPillar)
 	{
@@ -647,7 +651,7 @@ void DestroyPillarPair(PillarPair* pillarPair)
 	return;
 }
 
-void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameResources, const SdlParameters* const sdlParameters)
+static void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameResources, const SdlParameters* const sdlParameters)
 {
 	if (!pillarPair)
 	{
@@ -694,27 +698,6 @@ void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameResources,
 
 	// Set the yPosition for the bottom pillar according to the yPosition of the top pillar
 	pillarPair->bottomPillar->destRect.y = pillarPair->topPillar->destRect.y + topPillarheight + pillarPairMinimumSpacing;
-
-	return;
-}
-
-// Used to invert the gravity and lift for the sprite for a certain number of milliseconds
-void InvertSpriteVerticalForces(Sprite* sprite, int durationInMilliSeconds, SdlParameters* sdlParameters, GameResources* gameResources)
-{
-	int gravity, lift;
-
-	// Store the values before inverting, because we need to restore them after durationInMilliSeconds time
-	gravity = sprite->gravity;
-	lift = sprite->lift;
-
-	// Swap the gravity and lift values
-	sprite->gravity = lift;
-	sprite->lift = gravity;
-
-	// TODO: Implement the logic to swap the gravity and lift forces for a certain time
-
-	sprite->gravity = gravity;
-	sprite->lift = lift;
 
 	return;
 }

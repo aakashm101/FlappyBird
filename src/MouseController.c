@@ -37,7 +37,7 @@ void HandleMouseEvents(SdlParameters* sdlParameters, GameResources* gameResource
 	return;
 }
 
-// Used to check is the mouse clicked within the destRect of the sprite
+// Used to check whether mouse button is clicked within the destRect of the sprite
 bool clickedOnSprite(const Sprite* const sprite, int mouseX, int mouseY)
 {
 	if (mouseX >= sprite->destRect.x && mouseX <= sprite->destRect.x + sprite->destRect.w &&

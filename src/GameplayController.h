@@ -1,4 +1,6 @@
 #pragma once
+#include <stdbool.h>
 #include "global.h"
 
-void handleGameplay(SdlParameters* sdlParameters, GameResources* gameResources);
+void HandleGameplay(SdlParameters* sdlParameters, GameResources* gameResources);
+static bool CheckSpriteCollision(Sprite* sprite1, Sprite* sprite2);
