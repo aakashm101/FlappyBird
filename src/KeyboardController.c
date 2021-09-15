@@ -3,7 +3,7 @@
 #include "KeyboardController.h"
 #include "ResourceController.h"
 
-void handleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResources)
+void HandleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResources)
 {
 	if (sdlParameters->event.type == SDL_KEYDOWN)	// If a key is pressed down (Oneshot). Need to add debounce logic.
 	{

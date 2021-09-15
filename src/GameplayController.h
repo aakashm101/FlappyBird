@@ -3,4 +3,5 @@
 #include "global.h"
 
 void HandleGameplay(SdlParameters* sdlParameters, GameResources* gameResources);
+void HandleGameOver(SdlParameters* sdlParameters, GameResources* gameResources);
 static bool CheckSpriteCollision(Sprite* sprite1, Sprite* sprite2);

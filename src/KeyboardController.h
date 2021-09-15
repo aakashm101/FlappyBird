@@ -1,4 +1,4 @@
 #pragma once
 #include "global.h"
 
-void handleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResources);
+void HandleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResources);

@@ -16,7 +16,7 @@
 static SdlParameters sdlParameters;
 static GameResources gameResources;
 
-int DEBUG = 1;
+int DEBUG = 0;
 
 int main()
 {
@@ -55,7 +55,7 @@ int main()
 			}
 			else if (sdlParameters.event.type == SDL_KEYDOWN || sdlParameters.event.type == SDL_KEYUP)
 			{
-				handleKeyboardEvents(&sdlParameters, &gameResources);
+				HandleKeyboardEvents(&sdlParameters, &gameResources);
 			}
 			else if (sdlParameters.event.type == SDL_MOUSEBUTTONDOWN)
 			{
@@ -69,11 +69,14 @@ int main()
 		case GAME_MAIN_MENU:
 			showMainMenu(&gameResources, &sdlParameters);
 			break;
+		case GAME_LEADERBOARD:
+			handleLeaderboard(&sdlParameters, &gameResources);
+			break;
 		case GAME_RUNNING:
 			HandleGameplay(&sdlParameters, &gameResources);
 			break;
-		case GAME_LEADERBOARD:
-			handleLeaderboard(&sdlParameters, &gameResources);
+		case GAME_OVER:
+			HandleGameOver(&sdlParameters, &gameResources);
 			break;
 		default:
 			break;

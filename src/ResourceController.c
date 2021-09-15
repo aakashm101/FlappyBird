@@ -596,6 +596,8 @@ static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParam
 			// Deallocate memory for previous pillar pairs if the memory allocation for current pillar pair fails
 			for (int i = 0; i < pillarPairsIndex; i++)
 			{
+				// Check only whether the memory is allocated for the bottom pillar because the memory for 
+				// the bottom pillar is allocated after allocating memory for the top pillar (Top pillar exists)
 				if (pillarPairs[i].bottomPillar)
 				{
 					free(pillarPairs[i].topPillar);
@@ -704,7 +706,6 @@ static void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameRes
 
 void ParallaxEffect(Sprite* sprites, int spriteCount, int* const leftEndIndex, int* const rightEndIndex)
 {
-	// Fetch the values once instead of accesssing multiple times
 	int left = *leftEndIndex;
 	int right = *rightEndIndex;
 

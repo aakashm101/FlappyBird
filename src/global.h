@@ -17,7 +17,7 @@ typedef enum _GameState
 	GAME_LEADERBOARD,	// The user is viewing leaderboards
 	GAME_RUNNING,		// The user is playing the game
 	GAME_PAUSED,		// The game is paused
-	GAME_FINISHED,		// The game is finished
+	GAME_OVER,			// The game is over
 } GameState;
 
 typedef struct _SdlParameters 
