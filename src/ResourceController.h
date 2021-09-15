@@ -3,6 +3,7 @@
 
 // Used for loading and unloading tilemap, sprites
 int LoadGameResources(GameResources* gameResources, const SdlParameters* const sdlParameters);
+void ResetGameResourceParameters(GameResources* gameResources, SdlParameters* sdlParameters);
 void UnloadGameResources(GameResources* gameResources);
 static Text* CreateText(const char* text, const int textSize, const SdlParameters* const sdlParameters, SDL_Color fontColor);
 static void DestroyText(Text* text);

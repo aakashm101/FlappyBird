@@ -10,9 +10,12 @@ void HandleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResou
 		if (DEBUG) printf("[DEBUG INFO] SDL_KEYDOWN event occurred. KEY: %s\n", SDL_GetKeyName(sdlParameters->event.key.keysym.sym));
 		switch (sdlParameters->event.key.keysym.sym)
 		{
-		case SDLK_ESCAPE:
+		case SDLK_ESCAPE:	// Press 'ESCAPE' key to exit game (Need to improve this by adding a button to exit the game)
 			sdlParameters->mainLoopRunning = false;
 			return;
+		case SDLK_r:		// Press 'R' to reset game state (For Testing)
+			ResetGameResourceParameters(gameResources, sdlParameters);
+			break;
 		case SDLK_SPACE:
 			if (gameResources->gameState == GAME_RUNNING)
 			{
@@ -21,7 +24,7 @@ void HandleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResou
 			}
 			break;
 		default:
-			printf("[ERROR] No logic provided to handle when key %s is pressed!\n", SDL_GetKeyName(sdlParameters->event.key.keysym.sym));
+			if(DEBUG) printf("[DEBUG INFO] No logic provided to handle when key %s is pressed!\n", SDL_GetKeyName(sdlParameters->event.key.keysym.sym));
 			break;
 		}
 	}

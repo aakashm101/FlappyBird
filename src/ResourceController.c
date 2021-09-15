@@ -13,12 +13,161 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 
 	const SDL_Color fontColor = { 0xFF, 0xFF, 0xFF, 0xFF };
 
-	// Background X,Y coordinates, width and height (Obtained from tilemap)
-	const int BACKGROUND_XPOS = 0;
-	const int BACKGROUND_YPOS = 0;
+	// Background width and height (Obtained from tilemap)
 	const int BACKGROUND_WIDTH = 144;
 	const int BACKGROUND_HEIGHT = 256;
 	
+	// Floor X,Y coordinates, width and height (Obtained from tilemap)
+	const int FLOOR_XPOS = 292;
+	const int FLOOR_YPOS = 0;
+	const int FLOOR_WIDTH = 68;
+	const int FLOOR_HEIGHT = 56;
+
+	// Scale the background image to the window size without affecting dimensions of floor image
+	const float BACKGROUND_WIDTH_HEIGHT_RATIO = (float)BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
+	const int SCALED_BACKGROUND_HEIGHT = (sdlParameters->dm.h);
+	const int SCALED_BACKGROUND_WIDTH = ceil((double)SCALED_BACKGROUND_HEIGHT * BACKGROUND_WIDTH_HEIGHT_RATIO);
+
+	// Scale the floor image to the window height / 5 without affecting dimensions of the floor image
+	const float FLOOR_WIDTH_HEIGHT_RATIO = (float)FLOOR_WIDTH / FLOOR_HEIGHT;
+	const int SCALED_FLOOR_HEIGHT = ceil((double)WINDOW_HEIGHT / 5);
+	const int SCALED_FLOOR_WIDTH = ceil((double)SCALED_FLOOR_HEIGHT * FLOOR_WIDTH_HEIGHT_RATIO);
+
+	// Load the tilemap from the disk
+	gameResources->tileMapPath = "res/tilemap.png";
+	gameResources->tileMap = IMG_LoadTexture(sdlParameters->renderer, gameResources->tileMapPath);
+	if (!gameResources->tileMap)
+	{
+		printf("[ERROR] TileMap %s failed to load!\n", gameResources->tileMapPath);
+		return -1;
+	}
+	SDL_QueryTexture(gameResources->tileMap, NULL, NULL, &(gameResources->tileMapWidth), &(gameResources->tileMapHeight));
+	if (DEBUG) printf("[DEBUG INFO] Tilemap %s loaded. Width = %d, Height = %d.\n", gameResources->tileMapPath, gameResources->tileMapWidth, gameResources->tileMapHeight);
+
+	// Used to store how many background images will fit inside the window (Using multiple scrolling background images to create parallax effect)
+	// Use one more background image (It can be partially outside the current window) to create the parallax effect
+	gameResources->backgroundSpriteCount = ceil((double)WINDOW_WIDTH / SCALED_BACKGROUND_WIDTH);
+	gameResources->backgroundSpriteCount = gameResources->backgroundSpriteCount + 1;
+	gameResources->backgroundLeftEndIndex = 0;
+	gameResources->backgroundRightEndIndex = gameResources->backgroundSpriteCount - 1;
+	gameResources->backgroundSpriteArray = (Sprite*)calloc(gameResources->backgroundSpriteCount, sizeof(Sprite));	// Allocate memory for background sprites
+	if (!gameResources->backgroundSpriteArray)
+	{
+		printf("[ERROR] Failed to allocate memory for backround sprite!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' created. Count = %d\n", "background", gameResources->backgroundSpriteCount);
+
+	// Used to store how many floor images will fit inside the window (Using multiple scrolling floor images to create parallax effect)
+	// Use one more floor image (It can be partially outside the current window) to create the parallax effect
+	gameResources->floorSpriteCount = ceil((double)WINDOW_WIDTH / SCALED_FLOOR_WIDTH);
+	gameResources->floorSpriteCount = gameResources->floorSpriteCount + 1;
+	gameResources->floorLeftEndIndex = 0;
+	gameResources->floorRightEndIndex = gameResources->floorSpriteCount - 1;
+	gameResources->floorSpriteArray = (Sprite*)calloc(gameResources->floorSpriteCount, sizeof(Sprite));		// Allocate memory for floor sprites
+	if (!gameResources->floorSpriteArray)
+	{
+		printf("[ERROR] Failed to allocate memory for floor sprite!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' created. Count = %d\n", "floor", gameResources->floorSpriteCount);
+
+	// Allocate memory for bird sprite
+	gameResources->flappyBirdLogo = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->flappyBirdLogo)
+	{
+		printf("[ERROR] Memory allocation failed for flappy bird logo!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' created.\n", "bird");
+
+	// Allocate memory for play button sprite
+	gameResources->playButton = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->playButton)
+	{
+		printf("[ERROR] Memory allocation failed for play button!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "play_button");
+
+	// Allocate memory for leaderboard button sprite
+	gameResources->leaderboardButton = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->leaderboardButton)
+	{
+		printf("[ERROR] Memory allocation failed for leaderboard button!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "leaderboard_button");
+
+	// Allocate memory for get_ready button sprite
+	gameResources->getReady = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->getReady)
+	{
+		printf("[ERROR] Memory allocation failed for sprite containing 'Get Ready' text!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "get_ready_button");
+
+	// Allocate memory for game_over button sprite
+	gameResources->gameOver = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->gameOver)
+	{
+		printf("[ERROR] Memory allocation failed for sprite containing 'Game Over' text!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "game_over_button");
+
+	// Allocate memory for bird sprite
+	gameResources->bird = (Sprite*)malloc(sizeof(Sprite));
+	if (!gameResources->bird)
+	{
+		printf("[ERROR] Memory allocation failed for bird sprite!\n");
+		return -1;
+	}
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "bird");
+
+	// Allocate memory for 'Coming soon' Text
+	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);
+	if (!gameResources->comingSoonText)
+	{
+		printf("[ERROR] Text creation failed!\n");
+		return -1;
+	}
+
+	// Reset the game resources (Need to reset the sprite parameters in game resources before creating pillar pairs)
+	ResetGameResourceParameters(gameResources, sdlParameters);
+
+	// Set the values for create pillar pairs and create pillar pairs
+	gameResources->pillarPairMinimumSpacing = 3 * (gameResources->bird->destRect.h);
+	gameResources->pillarPairCount = 5;
+	gameResources->pillarPairsLeftEndIndex = 0;
+	gameResources->pillarPairsRightEndIndex = gameResources->pillarPairCount - 1;
+	gameResources->distanceBetweenPillars = ceil((double)WINDOW_WIDTH / 5);
+	gameResources->pillarPairs = CreatePillarPair(gameResources, sdlParameters, gameResources->pillarPairCount);
+	if (!gameResources->pillarPairs)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+void ResetGameResourceParameters(GameResources* gameResources, SdlParameters* sdlParameters)
+{
+	if (!gameResources)
+	{
+		printf("[ERROR] Cannot reset game resource parameters for empty game resources!\n");
+		return;
+	}
+
+	// Fetch the window dimension values
+	const int WINDOW_WIDTH = sdlParameters->dm.w;
+	const int WINDOW_HEIGHT = sdlParameters->dm.h;
+
+	// Background X,Y coordinates, width and height (Obtained from tilemap)
+	const int BACKGROUND_WIDTH = 144;
+	const int BACKGROUND_HEIGHT = 256;
+
 	// Floor X,Y coordinates, width and height (Obtained from tilemap)
 	const int FLOOR_XPOS = 292;
 	const int FLOOR_YPOS = 0;
@@ -51,7 +200,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 
 	// Scale the background image to the window size without affecting dimensions of floor image
 	const float BACKGROUND_WIDTH_HEIGHT_RATIO = (float)BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
-	const int SCALED_BACKGROUND_HEIGHT = WINDOW_HEIGHT;
+	const int SCALED_BACKGROUND_HEIGHT = (sdlParameters->dm.h);
 	const int SCALED_BACKGROUND_WIDTH = ceil((double)SCALED_BACKGROUND_HEIGHT * BACKGROUND_WIDTH_HEIGHT_RATIO);
 
 	// Scale the floor image to the window height / 5 without affecting dimensions of the floor image
@@ -59,39 +208,14 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	const int SCALED_FLOOR_HEIGHT = ceil((double)WINDOW_HEIGHT / 5);
 	const int SCALED_FLOOR_WIDTH = ceil((double)SCALED_FLOOR_HEIGHT * FLOOR_WIDTH_HEIGHT_RATIO);
 
-	int backgroundImageCount;
-	int floorImageCount;
+	// Open the main menu on start
+	gameResources->gameState = GAME_MAIN_MENU;
 
 	// Set the global xTranslation value for parallax effect
 	gameResources->parallaxGlobalXTranslation = -2;
-
-	// Load the tilemap from the disk
-	gameResources->tileMapPath = "res/tilemap.png";
-	gameResources->tileMap = IMG_LoadTexture(sdlParameters->renderer, gameResources->tileMapPath);
-	if (!gameResources->tileMap)
-	{
-		printf("[ERROR] TileMap %s failed to load!\n", gameResources->tileMapPath);
-		return -1;
-	}
-	SDL_QueryTexture(gameResources->tileMap, NULL, NULL, &(gameResources->tileMapWidth), &(gameResources->tileMapHeight));
-	if (DEBUG) printf("[DEBUG INFO] Tilemap %s loaded. Width = %d, Height = %d.\n", gameResources->tileMapPath, gameResources->tileMapWidth, gameResources->tileMapHeight);
-
-	// Used to store how many background images will fit inside the window (Using multiple scrolling background images to create parallax effect)
-	// Use one more background image (It can be partially outside the current window) to create the parallax effect
-	backgroundImageCount = ceil((double)WINDOW_WIDTH / SCALED_BACKGROUND_WIDTH);
-	backgroundImageCount = backgroundImageCount + 1;
-	gameResources->backgroundSpriteCount = backgroundImageCount;
-	gameResources->backgroundLeftEndIndex = 0;
-	gameResources->backgroundRightEndIndex = backgroundImageCount - 1;
-
-	// Set the srcRect and destRect and default values for background images from the tilemap
-	gameResources->backgroundSpriteArray = (Sprite*)calloc(backgroundImageCount, sizeof(Sprite));
-	if (!gameResources->backgroundSpriteArray)
-	{
-		printf("[ERROR] Failed to allocate memory for backround sprite!\n");
-		return -1;
-	}
-	for (int backgroundSpriteIndex = 0; backgroundSpriteIndex < backgroundImageCount; backgroundSpriteIndex++)
+	
+	// Set the default values for background sprites
+	for (int backgroundSpriteIndex = 0; backgroundSpriteIndex < gameResources->backgroundSpriteCount; backgroundSpriteIndex++)
 	{
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].name = "background";
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].angle = 0;
@@ -101,12 +225,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].maxGravity = 0;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].lift = 0;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].maxLift = 0;
-		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.x = BACKGROUND_XPOS;
-		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.y = BACKGROUND_YPOS;
+		gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.x = (backgroundSpriteIndex == 0) ? 0 : gameResources->backgroundSpriteArray[backgroundSpriteIndex - 1].destRect.x + gameResources->backgroundSpriteArray[backgroundSpriteIndex - 1].destRect.w;	// Place the backgrounds size by side
+		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.y = 0;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.w = BACKGROUND_WIDTH;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].srcRect.h = BACKGROUND_HEIGHT;
-		gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.x = (backgroundSpriteIndex == 0) ? 0 : gameResources->backgroundSpriteArray[backgroundSpriteIndex - 1].destRect.x + gameResources->backgroundSpriteArray[backgroundSpriteIndex - 1].destRect.w;	// Place the backgrounds size by side
-		gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.y = 0;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.w = BACKGROUND_WIDTH;
 		gameResources->backgroundSpriteArray[backgroundSpriteIndex].destRect.h = BACKGROUND_HEIGHT;
 		ScaleSpriteToFitOnArea(
@@ -116,24 +238,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 			SCALED_BACKGROUND_WIDTH,
 			SCALED_BACKGROUND_HEIGHT);
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprites ready.\n", gameResources->backgroundSpriteArray[0].name);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", "background");
 
-	// Used to store how many floor images will fit inside the window (Using multiple scrolling floor images to create parallax effect)
-	// Use one more floor image (It can be partially outside the current window) to create the parallax effect
-	floorImageCount = ceil((double)WINDOW_WIDTH / SCALED_FLOOR_WIDTH);
-	floorImageCount = floorImageCount + 1;
-	gameResources->floorSpriteCount = floorImageCount;
-	gameResources->floorLeftEndIndex = 0;
-	gameResources->floorRightEndIndex = floorImageCount - 1;
-
-	// Set the srcRect and destRect and default values for floor images from the tilemap
-	gameResources->floorSpriteArray = (Sprite*)calloc(floorImageCount, sizeof(Sprite));
-	if (!gameResources->floorSpriteArray)
-	{
-		printf("[ERROR] Failed to allocate memory for floor sprite!\n");
-		return -1;
-	}
-	for (int floorSpriteIndex = 0; floorSpriteIndex < floorImageCount; floorSpriteIndex++)
+	// Set the default values for floor sprites
+	for (int floorSpriteIndex = 0; floorSpriteIndex < gameResources->floorSpriteCount; floorSpriteIndex++)
 	{
 		gameResources->floorSpriteArray[floorSpriteIndex].name = "floor";
 		gameResources->floorSpriteArray[floorSpriteIndex].angle = 0;
@@ -158,16 +266,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 			SCALED_FLOOR_WIDTH,
 			SCALED_FLOOR_HEIGHT);
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprites ready.\n", gameResources->floorSpriteArray[0].name);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", "floor");
 
-	// Set the srcRect and destRect and default values for flappy bird logo from the tilemap
+	// Set the default values for flappy_bird_logo sprite
 	// Fit the flappy bird logo to the top 1/3 of the area of the screen
-	gameResources->flappyBirdLogo = (Sprite*)malloc(sizeof(Sprite));
-	if (!gameResources->flappyBirdLogo)
-	{
-		printf("[ERROR] Memory allocation failed for flappy bird logo!\n");
-		return -1;
-	}
 	gameResources->flappyBirdLogo->name = "flappy_bird_logo";
 	gameResources->flappyBirdLogo->angle = 0;
 	gameResources->flappyBirdLogo->xTranslation = 0;
@@ -187,15 +289,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	ScaleSpriteToFitOnArea(gameResources->flappyBirdLogo, 0, 0, WINDOW_WIDTH, ceil((double)WINDOW_HEIGHT / 3));
 	CenterSpriteHorizontallyOnScreen(gameResources->flappyBirdLogo, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->flappyBirdLogo, 0.8);
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->flappyBirdLogo->name);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->flappyBirdLogo->name);
 
-	// Set the srcRect and destRect and default values for play button from the tilemap
-	gameResources->playButton = (Sprite*)malloc(sizeof(Sprite));
-	if (!gameResources->playButton)
-	{
-		printf("[ERROR] Memory allocation failed for play button!\n");
-		return -1;
-	}
+	// Set the default values for play button sprites
 	gameResources->playButton->name = "play_button";
 	gameResources->playButton->angle = 0;
 	gameResources->playButton->xTranslation = 0;
@@ -213,15 +309,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->playButton->destRect.w = (double)WINDOW_WIDTH / 2;
 	gameResources->playButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->playButton, 0.5);
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->playButton->name);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->playButton->name);
 
-	// Set the srcRect and destRect and default values for leaderboard button from the tilemap
-	gameResources->leaderboardButton = (Sprite*)malloc(sizeof(Sprite));
-	if (!gameResources->leaderboardButton)
-	{
-		printf("[ERROR] Memory allocation failed for leaderboard button!\n");
-		return -1;
-	}
+	// Set the default values for leaderboard button sprites
 	gameResources->leaderboardButton->name = "leaderboard_button";
 	gameResources->leaderboardButton->angle = 0;
 	gameResources->leaderboardButton->xTranslation = 0;
@@ -239,16 +329,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->leaderboardButton->destRect.w = (double)WINDOW_WIDTH / 2;
 	gameResources->leaderboardButton->destRect.h = (double)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->leaderboardButton, 0.5);
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", gameResources->leaderboardButton->name);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->leaderboardButton->name);
 
 	// Set the srcRect and destRect and default values for sprite containing 'Get Ready' text from the tilemap
 	// Place it at WINDOW HEIGHT/6 distance from the top and scale the texture to fit
-	gameResources->getReady = (Sprite*)malloc(sizeof(Sprite));
-	if (!gameResources->getReady)
-	{
-		printf("[ERROR] Memory allocation failed for sprite containing 'Get Ready' text!\n");
-		return -1;
-	}
 	gameResources->getReady->name = "get_ready";
 	gameResources->getReady->angle = 0;
 	gameResources->getReady->xTranslation = 0;
@@ -268,15 +352,10 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	ScaleSpriteToFitOnArea(gameResources->getReady, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 6);
 	CenterSpriteHorizontallyOnScreen(gameResources->getReady, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->getReady, 0.5);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->getReady->name);
 
 	// Set the srcRect and destRect and default values for sprite containing 'Game Over' text from the tilemap
 	// Place it at WINDOW HEIGHT/6 distance from the top and scale the texture to fit
-	gameResources->gameOver = (Sprite*)malloc(sizeof(Sprite));
-	if (!gameResources->gameOver)
-	{
-		printf("[ERROR] Memory allocation failed for sprite containing 'Game Over' text!\n");
-		return -1;
-	}
 	gameResources->gameOver->name = "game_over";
 	gameResources->gameOver->angle = 0;
 	gameResources->gameOver->xTranslation = 0;
@@ -296,14 +375,9 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	ScaleSpriteToFitOnArea(gameResources->gameOver, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 6);
 	CenterSpriteHorizontallyOnScreen(gameResources->gameOver, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->gameOver, 0.5);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->gameOver->name);
 
-	// Set the srcRect and destRect and default values for bird sprite from the tilemap
-	gameResources->bird = (Sprite*)malloc(sizeof(Sprite));
-	if (!gameResources->bird)
-	{
-		printf("[ERROR] Memory allocation failed for bird sprite!\n");
-		return -1;
-	}
+	// Set the default values for bird sprite
 	gameResources->bird->name = "bird";
 	gameResources->bird->angle = 0;
 	gameResources->bird->xTranslation = 0;
@@ -321,28 +395,16 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	gameResources->bird->destRect.w = BIRD_WIDTH * (WINDOW_HEIGHT / 200);	// Dynamically scale the bird sprite based on window height
 	gameResources->bird->destRect.h = BIRD_HEIGHT * (WINDOW_HEIGHT / 200);	// Dynamically scale the bird sprite based on window height
 	CenterSpriteVerticallyOnScreen(gameResources->bird, sdlParameters);
+	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->bird->name);
 
-	// Allocate memory for 'Coming soon' Text
-	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);
-	if (!gameResources->comingSoonText)
+	// Reset pillar pair parameters
+	for (int pillarPairIndex = 0; pillarPairIndex < gameResources->pillarPairCount; pillarPairIndex++)
 	{
-		printf("[ERROR] Text creation failed!\n");
-		return -1;
+		gameResources->pillarPairs[pillarPairIndex].topPillar->destRect.x = (pillarPairIndex == 0) ? (gameResources->distanceBetweenPillars) : (gameResources->pillarPairs[pillarPairIndex - 1].topPillar->destRect.x + gameResources->pillarPairs[pillarPairIndex - 1].topPillar->destRect.w + gameResources->distanceBetweenPillars);
+		gameResources->pillarPairs[pillarPairIndex].bottomPillar->destRect.x = (pillarPairIndex == 0) ? (gameResources->distanceBetweenPillars) : (gameResources->pillarPairs[pillarPairIndex - 1].bottomPillar->destRect.x + gameResources->pillarPairs[pillarPairIndex - 1].bottomPillar->destRect.w + gameResources->distanceBetweenPillars);
 	}
 
-	// Set the values for create pillar pairs and create pillar pairs
-	gameResources->pillarPairMinimumSpacing = 3 * (gameResources->bird->destRect.h);
-	gameResources->pillarPairCount = 5;
-	gameResources->pillarPairsLeftEndIndex = 0;
-	gameResources->pillarPairsRightEndIndex = gameResources->pillarPairCount - 1;
-	gameResources->distanceBetweenPillars = ceil((double)WINDOW_WIDTH / 5);
-	gameResources->pillarPairs = CreatePillarPair(gameResources, sdlParameters, gameResources->pillarPairCount);
-	if (!gameResources->pillarPairs)
-	{
-		return -1;
-	}
-
-	return 0;
+	return;
 }
 
 void UnloadGameResources(GameResources* gameResources)
@@ -527,15 +589,7 @@ static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParam
 	const int PILLAR_SRCRECT_HEIGHT = 158;
 	const int PILLAR_SRCRECT_CAPITAL_HEIGHT = 16;
 
-	// Ratio of capital height to pillar height
-	const float PILLAR_SRCRECT_CAPITAL_HEIGHT_RATIO = (float)PILLAR_SRCRECT_CAPITAL_HEIGHT / PILLAR_SRCRECT_HEIGHT;
-
-	// Fetch the screen dimensions and distance between pillars once instead of fetching it multiple times during the calculation
-	int windowWidth = sdlParameters->dm.w;
-	int windowHeight = sdlParameters->dm.h;
-	int distanceBetweenPillars = gameResources->distanceBetweenPillars;
-
-	// Declare the variable
+	const float PILLAR_SRCRECT_CAPITAL_HEIGHT_RATIO = (float)PILLAR_SRCRECT_CAPITAL_HEIGHT / PILLAR_SRCRECT_HEIGHT;	// Ratio of capital height to pillar height
 	PillarPair* pillarPairs = NULL;
 
 	// Allocate memory for the pillar pairs
@@ -579,13 +633,13 @@ static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParam
 		pillarPairs[pillarPairsIndex].topPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
 		pillarPairs[pillarPairsIndex].topPillar->srcRect.h = PILLAR_SRCRECT_HEIGHT;
 		
-		// If this is the first pillar, place it at a distance distanceBetweenPillars from the left side of the screen. If not, place it next to the previous pillar at a distance distanceBetweenPillars
+		// If this is the first pillar, place it at a distance gameResources->distanceBetweenPillars from the left side of the screen. If not, place it next to the previous pillar at a distance gameResources->distanceBetweenPillars
 		pillarPairs[pillarPairsIndex].topPillar->destRect.x = 0;
 		pillarPairs[pillarPairsIndex].topPillar->destRect.y = 0;
 		pillarPairs[pillarPairsIndex].topPillar->destRect.w = PILLAR_SRCRECT_WIDTH;
 		pillarPairs[pillarPairsIndex].topPillar->destRect.h = PILLAR_SRCRECT_HEIGHT;
-		ScaleSpriteToFitOnArea(pillarPairs[pillarPairsIndex].topPillar, 0, 0, windowWidth, windowHeight - gameResources->floorSpriteArray[0].destRect.h);
-		pillarPairs[pillarPairsIndex].topPillar->destRect.x = (pillarPairsIndex == 0) ? distanceBetweenPillars : pillarPairs[pillarPairsIndex - 1].topPillar->destRect.x + pillarPairs[pillarPairsIndex - 1].topPillar->destRect.w + distanceBetweenPillars;
+		ScaleSpriteToFitOnArea(pillarPairs[pillarPairsIndex].topPillar, 0, 0, sdlParameters->dm.w, sdlParameters->dm.h - gameResources->floorSpriteArray[0].destRect.h);
+		pillarPairs[pillarPairsIndex].topPillar->destRect.x = (pillarPairsIndex == 0) ? gameResources->distanceBetweenPillars : pillarPairs[pillarPairsIndex - 1].topPillar->destRect.x + pillarPairs[pillarPairsIndex - 1].topPillar->destRect.w + gameResources->distanceBetweenPillars;
 
 		// Create the bottom pillar and set default values
 		pillarPairs[pillarPairsIndex].bottomPillar = malloc(sizeof(Sprite));
@@ -620,13 +674,13 @@ static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParam
 		pillarPairs[pillarPairsIndex].bottomPillar->srcRect.w = PILLAR_SRCRECT_WIDTH;
 		pillarPairs[pillarPairsIndex].bottomPillar->srcRect.h = PILLAR_SRCRECT_HEIGHT;
 
-		// If this is the first pillar, place it at a distance distanceBetweenPillars from the left side of the screen. If not, place it next to the previous pillar at a distance distanceBetweenPillars
+		// If this is the first pillar, place it at a distance gameResources->distanceBetweenPillars from the left side of the screen. If not, place it next to the previous pillar at a distance gameResources->distanceBetweenPillars
 		pillarPairs[pillarPairsIndex].bottomPillar->destRect.x = 0;
 		pillarPairs[pillarPairsIndex].bottomPillar->destRect.y = 0;
 		pillarPairs[pillarPairsIndex].bottomPillar->destRect.w = PILLAR_SRCRECT_WIDTH;
 		pillarPairs[pillarPairsIndex].bottomPillar->destRect.h = PILLAR_SRCRECT_HEIGHT;
-		ScaleSpriteToFitOnArea(pillarPairs[pillarPairsIndex].bottomPillar, 0, 0, windowWidth, windowHeight - gameResources->floorSpriteArray[0].destRect.h);
-		pillarPairs[pillarPairsIndex].bottomPillar->destRect.x = (pillarPairsIndex == 0) ? distanceBetweenPillars : pillarPairs[pillarPairsIndex - 1].bottomPillar->destRect.x + pillarPairs[pillarPairsIndex - 1].bottomPillar->destRect.w + distanceBetweenPillars;
+		ScaleSpriteToFitOnArea(pillarPairs[pillarPairsIndex].bottomPillar, 0, 0, sdlParameters->dm.w, sdlParameters->dm.h - gameResources->floorSpriteArray[0].destRect.h);
+		pillarPairs[pillarPairsIndex].bottomPillar->destRect.x = (pillarPairsIndex == 0) ? gameResources->distanceBetweenPillars : pillarPairs[pillarPairsIndex - 1].bottomPillar->destRect.x + pillarPairs[pillarPairsIndex - 1].bottomPillar->destRect.w + gameResources->distanceBetweenPillars;
 
 		// Set random pillar heights
 		SetRandomPillarHeight(&(pillarPairs[pillarPairsIndex]), gameResources, sdlParameters);
@@ -634,9 +688,9 @@ static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParam
 	
 	// Get the capital height after resizing the pillars to fit the height of the window
 	gameResources->pillarCapitalHeight = pillarPairs->topPillar[0].destRect.h * PILLAR_SRCRECT_CAPITAL_HEIGHT_RATIO;
-	if(DEBUG) printf("[DEBUG INFO] Capital height of pillar = %d\n", gameResources->pillarCapitalHeight);
 
-	if (DEBUG) printf("[DEBUG INFO] Created %d 'Pillar pairs'\n", pairCount);
+	if (DEBUG) printf("[DEBUG INFO] Created 'Pillar pairs'. Count = %d\n", pairCount);
+	if (DEBUG) printf("[DEBUG INFO] Capital height of pillar = %d\n", gameResources->pillarCapitalHeight);
 	return pillarPairs;
 }
 

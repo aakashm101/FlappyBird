@@ -39,7 +39,6 @@ int main()
 		return -1;
 	}
 
-	gameResources.gameState = GAME_MAIN_MENU;	// Open the main menu on start
 	while (sdlParameters.mainLoopRunning)
 	{
 		Uint32 frameStart, frameDelay;
