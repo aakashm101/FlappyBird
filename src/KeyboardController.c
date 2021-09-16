@@ -14,7 +14,7 @@ void HandleKeyboardEvents(SdlParameters* sdlParameters, GameResources* gameResou
 			sdlParameters->mainLoopRunning = false;
 			return;
 		case SDLK_r:		// Press 'R' to reset game state (For Testing)
-			ResetGameResourceParameters(gameResources, sdlParameters);
+			ResetGameResourceParameters(RESET_BACKGROUND | RESET_FLOOR, gameResources, sdlParameters);
 			break;
 		case SDLK_SPACE:
 			if (gameResources->gameState == GAME_RUNNING)

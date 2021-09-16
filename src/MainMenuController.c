@@ -3,7 +3,7 @@
 #include "SDLController.h"
 #include "ResourceController.h"
 
-void showMainMenu(GameResources* gameResources, SdlParameters* sdlParameters)
+void ShowMainMenu(GameResources* gameResources, SdlParameters* sdlParameters)
 {
 	if (!gameResources)
 	{

@@ -66,10 +66,10 @@ int main()
 		switch (gameResources.gameState)
 		{
 		case GAME_MAIN_MENU:
-			showMainMenu(&gameResources, &sdlParameters);
+			ShowMainMenu(&gameResources, &sdlParameters);
 			break;
 		case GAME_LEADERBOARD:
-			handleLeaderboard(&sdlParameters, &gameResources);
+			HandleLeaderboard(&sdlParameters, &gameResources);
 			break;
 		case GAME_RUNNING:
 			HandleGameplay(&sdlParameters, &gameResources);

@@ -15,7 +15,6 @@ void HandleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 	// Rendering multiple pillars
 	for (int pillarPairIndex = 0; pillarPairIndex < gameResources->pillarPairCount; pillarPairIndex++)
 	{
-		// Fetch the values once instead of accessing it multiple times
 		int left = gameResources->pillarPairsLeftEndIndex;
 		int right = gameResources->pillarPairsRightEndIndex;
 		int rightEndTopPillarXpos = gameResources->pillarPairs[right].topPillar->destRect.x;
@@ -26,18 +25,28 @@ void HandleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 		(gameResources->pillarPairs[pillarPairIndex].topPillar->destRect.x) += gameResources->pillarPairs[pillarPairIndex].topPillar->xTranslation;
 		(gameResources->pillarPairs[pillarPairIndex].bottomPillar->destRect.x) += gameResources->pillarPairs[pillarPairIndex].bottomPillar->xTranslation;
 
-		// Avoiding the bird from going out of the window or below the floor
+		// If a pillar pair goes to the left of the screen (out of the window),place that pillar pair 
+		// beside the pillar pair at the rightmost end of the screen
 		if (gameResources->pillarPairs[pillarPairIndex].topPillar->destRect.x + gameResources->pillarPairs[pillarPairIndex].topPillar->destRect.w < 0)
 		{
+			// Move the top pillar towards the left end of the screen
 			gameResources->pillarPairs[pillarPairIndex].topPillar->destRect.x = rightEndTopPillarXpos + rightEndTopPillarWidth + gameResources->distanceBetweenPillars;
+			
+			// Add 10 points, if the pillar moves out of the window at the left end of the screen. This happens only if
+			// the bird did not collide with any pillar till now. If collision happens, the game switches to the GAME_OVER state.
+			gameResources->gameScore += 10;
+			if (DEBUG) printf("[DEBUG INFO] Game score changed. Current score = %d\n", gameResources->gameScore);
 		}
 		if (gameResources->pillarPairs[pillarPairIndex].bottomPillar->destRect.x + gameResources->pillarPairs[pillarPairIndex].bottomPillar->destRect.w < 0)
 		{
+			// Move the bottom pillar towards the left end of the screen
 			gameResources->pillarPairs[pillarPairIndex].bottomPillar->destRect.x = rightEndBottomPillarXpos + rightEndBottomPillarWidth + gameResources->distanceBetweenPillars;
 		}
+		// Wraparound for the pillar pairs
 		gameResources->pillarPairsLeftEndIndex = (left + 1) % gameResources->pillarPairCount;
 		gameResources->pillarPairsRightEndIndex = (right + 1) % gameResources->pillarPairCount;
 
+		// Copy the top and bottom pillars to the renderer
 		CopySpriteToRenderer(gameResources->pillarPairs[pillarPairIndex].topPillar, sdlParameters, gameResources);
 		CopySpriteToRenderer(gameResources->pillarPairs[pillarPairIndex].bottomPillar, sdlParameters, gameResources);
 	}
@@ -111,6 +120,11 @@ void HandleGameOver(SdlParameters* sdlParameters, GameResources* gameResources)
 
 	// Display 'Game Over' sprite
 	CopySpriteToRenderer(gameResources->gameOver, sdlParameters, gameResources);
+
+	// Copy the menu button to the renderer
+	ResetGameResourceParameters(RESET_DEFAULT ,gameResources, sdlParameters);
+	CopySpriteToRenderer(gameResources->menuButton, sdlParameters, gameResources);
+	gameResources->gameState = GAME_OVER;
 }
 
 // Used to detect whether two sprites are colliding

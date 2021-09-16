@@ -1,4 +1,4 @@
 #pragma once
 #include "global.h"
 
-void showMainMenu(GameResources* gameResources, SdlParameters* sdlParameters);
+void ShowMainMenu(GameResources* gameResources, SdlParameters* sdlParameters);

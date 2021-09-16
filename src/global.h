@@ -20,6 +20,13 @@ typedef enum _GameState
 	GAME_OVER,			// The game is over
 } GameState;
 
+typedef enum _ResetParameters
+{
+	RESET_DEFAULT = 0b0000,		// Use defaults (Do not reset background and floor).
+	RESET_BACKGROUND = 0b0001,	// Reset background (especially xPos and yPos of the destRect)
+	RESET_FLOOR = 0b0010,		// Reset floor (especially xPos and yPos of the destRect)
+} ResetParameters;
+
 typedef struct _SdlParameters 
 {
 	const char* fontPath;	// Used to store the font path 
@@ -49,6 +56,7 @@ typedef struct _GameResources		// (Assigned when LoadResources() is called)
 	int pillarCapitalHeight;		// Height of the pillar capital (in pixels)
 	int pillarPairMinimumSpacing;	// Used to store the minimum spacing between two pillars
 	int parallaxGlobalXTranslation;	// Sprites will use this value for moving multiple elements on the screen at a same rate while performing parallax effect
+	int gameScore;					// For crossing each pillar pair successfully, add one point
 	GameState gameState;			// Stores the game state (Useful to switch between states like main menu, gameplay etc)
 	SDL_Texture* tileMap;			// Pointer to the tilemap sprite
 	Sprite* backgroundSpriteArray;	// Pointer to the array of background sprites
@@ -56,6 +64,7 @@ typedef struct _GameResources		// (Assigned when LoadResources() is called)
 	Sprite* flappyBirdLogo;			// Pointer to flappy bird logo sprite
 	Sprite* playButton;				// Pointer to play button sprite
 	Sprite* leaderboardButton;		// Pointer to leaderboard button sprite
+	Sprite* menuButton;				// Pointer to menu button sprite
 	Sprite* getReady;				// Pointer to sprite with text 'Get Ready' sprite
 	Sprite* gameOver;				// Pointer to sprite with text 'Game Over' sprite
 	Sprite* bird;					// Pointer to bird sprite 
