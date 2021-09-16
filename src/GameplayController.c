@@ -101,6 +101,7 @@ void HandleGameplay(SdlParameters* sdlParameters, GameResources* gameResources)
 		if(CheckSpriteCollision(gameResources->pillarPairs[pillarPairIndex].topPillar, gameResources->bird) || 
 			CheckSpriteCollision(gameResources->pillarPairs[pillarPairIndex].bottomPillar, gameResources->bird))
 		{
+			ResetGameResourceParameters(RESET_DEFAULT, gameResources, sdlParameters);
 			gameResources->gameState = GAME_OVER;
 			return;
 		}
@@ -122,9 +123,7 @@ void HandleGameOver(SdlParameters* sdlParameters, GameResources* gameResources)
 	CopySpriteToRenderer(gameResources->gameOver, sdlParameters, gameResources);
 
 	// Copy the menu button to the renderer
-	ResetGameResourceParameters(RESET_DEFAULT ,gameResources, sdlParameters);
 	CopySpriteToRenderer(gameResources->menuButton, sdlParameters, gameResources);
-	gameResources->gameState = GAME_OVER;
 }
 
 // Used to detect whether two sprites are colliding

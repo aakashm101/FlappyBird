@@ -67,7 +67,8 @@ typedef struct _GameResources		// (Assigned when LoadResources() is called)
 	Sprite* menuButton;				// Pointer to menu button sprite
 	Sprite* getReady;				// Pointer to sprite with text 'Get Ready' sprite
 	Sprite* gameOver;				// Pointer to sprite with text 'Game Over' sprite
-	Sprite* bird;					// Pointer to bird sprite 
+	Sprite* bird;					// Pointer to bird sprite
+	Sprite** bigNumberSpriteArray;	// Pointer to array of number images (Big size)
 	Text* comingSoonText;			// Pointer to 'Coming soon' text
 	PillarPair* pillarPairs;		// Pointer to pillar pairs (Pair of top and bottom pillar sprites)
 } GameResources;

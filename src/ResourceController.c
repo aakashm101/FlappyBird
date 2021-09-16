@@ -24,12 +24,12 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 	const int FLOOR_HEIGHT = 56;
 
 	// Scale the background image to the window size without affecting dimensions of floor image
-	const float BACKGROUND_WIDTH_HEIGHT_RATIO = (float)BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
+	const double BACKGROUND_WIDTH_HEIGHT_RATIO = (double)BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
 	const int SCALED_BACKGROUND_HEIGHT = (sdlParameters->dm.h);
 	const int SCALED_BACKGROUND_WIDTH = ceil((double)SCALED_BACKGROUND_HEIGHT * BACKGROUND_WIDTH_HEIGHT_RATIO);
 
 	// Scale the floor image to the window height / 5 without affecting dimensions of the floor image
-	const float FLOOR_WIDTH_HEIGHT_RATIO = (float)FLOOR_WIDTH / FLOOR_HEIGHT;
+	const double FLOOR_WIDTH_HEIGHT_RATIO = (double)FLOOR_WIDTH / FLOOR_HEIGHT;
 	const int SCALED_FLOOR_HEIGHT = ceil((double)WINDOW_HEIGHT / 5);
 	const int SCALED_FLOOR_WIDTH = ceil((double)SCALED_FLOOR_HEIGHT * FLOOR_WIDTH_HEIGHT_RATIO);
 
@@ -91,7 +91,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Memory allocation failed for play button!\n");
 		return -1;
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "play_button");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "play_button");
 
 	// Allocate memory for leaderboard button sprite
 	gameResources->leaderboardButton = (Sprite*)malloc(sizeof(Sprite));
@@ -100,7 +100,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Memory allocation failed for leaderboard button!\n");
 		return -1;
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "leaderboard_button");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "leaderboard_button");
 
 	// Allocate memory for menu button sprite
 	gameResources->menuButton = (Sprite*)malloc(sizeof(Sprite));
@@ -109,7 +109,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Memory allocation failed for menu button!\n");
 		return -1;
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "menu_button");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "menu_button");
 
 	// Allocate memory for get_ready sprite
 	gameResources->getReady = (Sprite*)malloc(sizeof(Sprite));
@@ -118,7 +118,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Memory allocation failed for sprite containing 'Get Ready' text!\n");
 		return -1;
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "get_ready_button");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "get_ready_button");
 
 	// Allocate memory for game_over sprite
 	gameResources->gameOver = (Sprite*)malloc(sizeof(Sprite));
@@ -127,7 +127,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Memory allocation failed for sprite containing 'Game Over' text!\n");
 		return -1;
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "game_over_button");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "game_over_button");
 
 	// Allocate memory for bird sprite
 	gameResources->bird = (Sprite*)malloc(sizeof(Sprite));
@@ -136,7 +136,7 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Memory allocation failed for bird sprite!\n");
 		return -1;
 	}
-	if (DEBUG) printf("[DEBUG INFO] '%s' sprite ready.\n", "bird");
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "bird");
 
 	// Allocate memory for 'Coming soon' Text
 	gameResources->comingSoonText = CreateText("Coming Soon", 40, sdlParameters, fontColor);
@@ -145,17 +145,36 @@ int LoadGameResources(GameResources* gameResources, const SdlParameters* const s
 		printf("[ERROR] Text creation failed!\n");
 		return -1;
 	}
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "coming_soon");
+
+	// Allocate memory for big number sprites (0-9)
+	gameResources->bigNumberSpriteArray = (Sprite**)calloc(10, sizeof(Sprite*));
+	if (!gameResources->bigNumberSpriteArray)
+	{
+		printf("[ERROR] Big number sprite array creation failed!\n");
+		return -1;
+	}
+	for (int bigNumberSpriteIndex = 0; bigNumberSpriteIndex < 10; bigNumberSpriteIndex++)
+	{
+		gameResources->bigNumberSpriteArray[bigNumberSpriteIndex] = (Sprite*)malloc(sizeof(Sprite));
+		if (!gameResources->bigNumberSpriteArray[bigNumberSpriteIndex])
+		{
+			printf("[ERROR] Big number %d sprite array element creation failed!\n", bigNumberSpriteIndex);
+			return -1;	// Need to add code to deallocate memory for previous elements if the current element memory allocation fails
+		}
+	}
+	if (DEBUG) printf("[DEBUG INFO] '%s' sprite created.\n", "big_number_array");
 
 	// Reset the game resources (Need to reset the sprite parameters in game resources before creating pillar pairs)
 	ResetGameResourceParameters(RESET_BACKGROUND | RESET_FLOOR, gameResources, sdlParameters);
 
 	// Set the values for create pillar pairs and create pillar pairs
 	gameResources->pillarPairMinimumSpacing = 3 * (gameResources->bird->destRect.h);
-	gameResources->pillarPairCount = 5;
+	gameResources->pillarPairCount = ceil((double)sdlParameters->dm.w / 400);
 	gameResources->pillarPairsLeftEndIndex = 0;
 	gameResources->pillarPairsRightEndIndex = gameResources->pillarPairCount - 1;
 	gameResources->distanceBetweenPillars = ceil((double)WINDOW_WIDTH / 5);
-	gameResources->pillarPairs = CreatePillarPair(gameResources, sdlParameters, gameResources->pillarPairCount);
+	gameResources->pillarPairs = CreatePillarPairs(gameResources, sdlParameters, gameResources->pillarPairCount);
 	if (!gameResources->pillarPairs)
 	{
 		return -1;
@@ -216,6 +235,18 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 	const int BIRD_YPOS = 490;
 	const int BIRD_WIDTH = 18;
 	const int BIRD_HEIGHT = 14;
+
+	// Big number X,Y coordinates, width and height (Obtained from tilemap)
+	const int BIG_NUMBER0_XPOS = 496; const int BIG_NUMBER0_YPOS = 60; const int BIG_NUMBER0_WIDTH = 12; const int BIG_NUMBER0_HEIGHT = 19;
+	const int BIG_NUMBER1_XPOS = 136; const int BIG_NUMBER1_YPOS = 455; const int BIG_NUMBER1_WIDTH = 8; const int BIG_NUMBER1_HEIGHT = 19;
+	const int BIG_NUMBER2_XPOS = 292; const int BIG_NUMBER2_YPOS = 160; const int BIG_NUMBER2_WIDTH = 12; const int BIG_NUMBER2_HEIGHT = 19;
+	const int BIG_NUMBER3_XPOS = 306; const int BIG_NUMBER3_YPOS = 160; const int BIG_NUMBER3_WIDTH = 12; const int BIG_NUMBER3_HEIGHT = 19;
+	const int BIG_NUMBER4_XPOS = 320; const int BIG_NUMBER4_YPOS = 160; const int BIG_NUMBER4_WIDTH = 12; const int BIG_NUMBER4_HEIGHT = 19;
+	const int BIG_NUMBER5_XPOS = 334; const int BIG_NUMBER5_YPOS = 160; const int BIG_NUMBER5_WIDTH = 12; const int BIG_NUMBER5_HEIGHT = 19;
+	const int BIG_NUMBER6_XPOS = 292; const int BIG_NUMBER6_YPOS = 184; const int BIG_NUMBER6_WIDTH = 12; const int BIG_NUMBER6_HEIGHT = 19;
+	const int BIG_NUMBER7_XPOS = 306; const int BIG_NUMBER7_YPOS = 184; const int BIG_NUMBER7_WIDTH = 12; const int BIG_NUMBER7_HEIGHT = 19;
+	const int BIG_NUMBER8_XPOS = 320; const int BIG_NUMBER8_YPOS = 184; const int BIG_NUMBER8_WIDTH = 12; const int BIG_NUMBER8_HEIGHT = 19;
+	const int BIG_NUMBER9_XPOS = 334; const int BIG_NUMBER9_YPOS = 184; const int BIG_NUMBER9_WIDTH = 12; const int BIG_NUMBER9_HEIGHT = 19;
 
 	// Scale the background image to the window size without affecting dimensions of floor image
 	const float BACKGROUND_WIDTH_HEIGHT_RATIO = (float)BACKGROUND_WIDTH / BACKGROUND_HEIGHT;
@@ -330,9 +361,9 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 	gameResources->playButton->srcRect.w = PLAY_BUTTON_WIDTH;
 	gameResources->playButton->srcRect.h = PLAY_BUTTON_HEIGHT;
 	gameResources->playButton->destRect.x = 0;
-	gameResources->playButton->destRect.y = (double)WINDOW_HEIGHT / 2 + PLAY_BUTTON_HEIGHT;
-	gameResources->playButton->destRect.w = (double)WINDOW_WIDTH / 2;
-	gameResources->playButton->destRect.h = (double)WINDOW_HEIGHT / 2;
+	gameResources->playButton->destRect.y = (float)WINDOW_HEIGHT / 2 + PLAY_BUTTON_HEIGHT;
+	gameResources->playButton->destRect.w = (float)WINDOW_WIDTH / 2;
+	gameResources->playButton->destRect.h = (float)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->playButton, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->playButton->name);
 
@@ -349,10 +380,10 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 	gameResources->leaderboardButton->srcRect.y = LEADERBOARD_BUTTON_YPOS;
 	gameResources->leaderboardButton->srcRect.w = LEADERBOARD_BUTTON_WIDTH;
 	gameResources->leaderboardButton->srcRect.h = LEADERBOARD_BUTTON_HEIGHT;
-	gameResources->leaderboardButton->destRect.x = (double)WINDOW_WIDTH / 2;
-	gameResources->leaderboardButton->destRect.y = (double)WINDOW_HEIGHT / 2 + LEADERBOARD_BUTTON_HEIGHT;
-	gameResources->leaderboardButton->destRect.w = (double)WINDOW_WIDTH / 2;
-	gameResources->leaderboardButton->destRect.h = (double)WINDOW_HEIGHT / 2;
+	gameResources->leaderboardButton->destRect.x = (float)WINDOW_WIDTH / 2;
+	gameResources->leaderboardButton->destRect.y = (float)WINDOW_HEIGHT / 2 + LEADERBOARD_BUTTON_HEIGHT;
+	gameResources->leaderboardButton->destRect.w = (float)WINDOW_WIDTH / 2;
+	gameResources->leaderboardButton->destRect.h = (float)WINDOW_HEIGHT / 2;
 	ScaleSpriteInPlaceByFactor(gameResources->leaderboardButton, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->leaderboardButton->name);
 
@@ -373,7 +404,7 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 	gameResources->menuButton->destRect.y = 0;
 	gameResources->menuButton->destRect.w = MENU_BUTTON_WIDTH;
 	gameResources->menuButton->destRect.h = MENU_BUTTON_HEIGHT;
-	ScaleSpriteToFitOnArea(gameResources->menuButton, 0, 0, (double)WINDOW_WIDTH / 2, (double)WINDOW_HEIGHT / 6);
+	ScaleSpriteToFitOnArea(gameResources->menuButton, 0, 0, (float)WINDOW_WIDTH / 2, (float)WINDOW_HEIGHT / 6);
 	ScaleSpriteInPlaceByFactor(gameResources->menuButton, 0.3);
 	gameResources->menuButton->destRect.y = WINDOW_HEIGHT - (2 * gameResources->menuButton->destRect.h);	// Place the button at the bottom
 	CenterSpriteHorizontallyOnScreen(gameResources->menuButton, sdlParameters);
@@ -397,7 +428,7 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 	gameResources->getReady->destRect.y = ceil((double)WINDOW_HEIGHT / 6);
 	gameResources->getReady->destRect.w = gameResources->getReady->srcRect.w;
 	gameResources->getReady->destRect.h = gameResources->getReady->srcRect.h;
-	ScaleSpriteToFitOnArea(gameResources->getReady, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 6);
+	ScaleSpriteToFitOnArea(gameResources->getReady, 0, 0, WINDOW_WIDTH, (float)WINDOW_HEIGHT / 6);
 	CenterSpriteHorizontallyOnScreen(gameResources->getReady, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->getReady, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->getReady->name);
@@ -420,7 +451,7 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 	gameResources->gameOver->destRect.y = ceil((double)WINDOW_HEIGHT / 6);
 	gameResources->gameOver->destRect.w = gameResources->gameOver->srcRect.w;
 	gameResources->gameOver->destRect.h = gameResources->gameOver->srcRect.h;
-	ScaleSpriteToFitOnArea(gameResources->gameOver, 0, 0, WINDOW_WIDTH, (double)WINDOW_HEIGHT / 6);
+	ScaleSpriteToFitOnArea(gameResources->gameOver, 0, 0, WINDOW_WIDTH, (float)WINDOW_HEIGHT / 6);
 	CenterSpriteHorizontallyOnScreen(gameResources->gameOver, sdlParameters);
 	ScaleSpriteInPlaceByFactor(gameResources->gameOver, 0.5);
 	if (DEBUG) printf("[DEBUG INFO] Sprite '%s' parameters reset\n", gameResources->gameOver->name);
@@ -449,9 +480,201 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 	for (int pillarPairIndex = 0; pillarPairIndex < gameResources->pillarPairCount; pillarPairIndex++)
 	{
 		SetRandomPillarHeight(gameResources->pillarPairs, gameResources, sdlParameters);
+		
+		// Set pillar pairs equidistant from each other
 		gameResources->pillarPairs[pillarPairIndex].topPillar->destRect.x = (pillarPairIndex == 0) ? (gameResources->distanceBetweenPillars) : (gameResources->pillarPairs[pillarPairIndex - 1].topPillar->destRect.x + gameResources->pillarPairs[pillarPairIndex - 1].topPillar->destRect.w + gameResources->distanceBetweenPillars);
 		gameResources->pillarPairs[pillarPairIndex].bottomPillar->destRect.x = (pillarPairIndex == 0) ? (gameResources->distanceBetweenPillars) : (gameResources->pillarPairs[pillarPairIndex - 1].bottomPillar->destRect.x + gameResources->pillarPairs[pillarPairIndex - 1].bottomPillar->destRect.w + gameResources->distanceBetweenPillars);
 	}
+
+	// Reset big number sprite array parameters
+	gameResources->bigNumberSpriteArray[0]->name = "big_number_0";
+	gameResources->bigNumberSpriteArray[0]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[0]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[0]->angle = 0;
+	gameResources->bigNumberSpriteArray[0]->gravity = 0;
+	gameResources->bigNumberSpriteArray[0]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[0]->lift = 0;
+	gameResources->bigNumberSpriteArray[0]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[0]->srcRect.x = BIG_NUMBER0_XPOS;
+	gameResources->bigNumberSpriteArray[0]->srcRect.y = BIG_NUMBER0_YPOS;
+	gameResources->bigNumberSpriteArray[0]->srcRect.w = BIG_NUMBER0_WIDTH;
+	gameResources->bigNumberSpriteArray[0]->srcRect.h = BIG_NUMBER0_HEIGHT;
+	gameResources->bigNumberSpriteArray[0]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[0]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[0]->destRect.w = BIG_NUMBER0_WIDTH;
+	gameResources->bigNumberSpriteArray[0]->destRect.h = BIG_NUMBER0_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[0], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+
+	gameResources->bigNumberSpriteArray[1]->name = "big_number_1";
+	gameResources->bigNumberSpriteArray[1]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[1]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[1]->angle = 0;
+	gameResources->bigNumberSpriteArray[1]->gravity = 0;
+	gameResources->bigNumberSpriteArray[1]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[1]->lift = 0;
+	gameResources->bigNumberSpriteArray[1]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[1]->srcRect.x = BIG_NUMBER1_XPOS;
+	gameResources->bigNumberSpriteArray[1]->srcRect.y = BIG_NUMBER1_YPOS;
+	gameResources->bigNumberSpriteArray[1]->srcRect.w = BIG_NUMBER1_WIDTH;
+	gameResources->bigNumberSpriteArray[1]->srcRect.h = BIG_NUMBER1_HEIGHT;
+	gameResources->bigNumberSpriteArray[1]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[1]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[1]->destRect.w = BIG_NUMBER1_WIDTH;
+	gameResources->bigNumberSpriteArray[1]->destRect.h = BIG_NUMBER1_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[1], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[1]->destRect.x = gameResources->bigNumberSpriteArray[0]->destRect.x + gameResources->bigNumberSpriteArray[0]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[2]->name = "big_number_2";
+	gameResources->bigNumberSpriteArray[2]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[2]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[2]->angle = 0;
+	gameResources->bigNumberSpriteArray[2]->gravity = 0;
+	gameResources->bigNumberSpriteArray[2]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[2]->lift = 0;
+	gameResources->bigNumberSpriteArray[2]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[2]->srcRect.x = BIG_NUMBER2_XPOS;
+	gameResources->bigNumberSpriteArray[2]->srcRect.y = BIG_NUMBER2_YPOS;
+	gameResources->bigNumberSpriteArray[2]->srcRect.w = BIG_NUMBER2_WIDTH;
+	gameResources->bigNumberSpriteArray[2]->srcRect.h = BIG_NUMBER2_HEIGHT;
+	gameResources->bigNumberSpriteArray[2]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[2]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[2]->destRect.w = BIG_NUMBER2_WIDTH;
+	gameResources->bigNumberSpriteArray[2]->destRect.h = BIG_NUMBER2_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[2], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[2]->destRect.x = gameResources->bigNumberSpriteArray[1]->destRect.x + gameResources->bigNumberSpriteArray[1]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[3]->name = "big_number_3";
+	gameResources->bigNumberSpriteArray[3]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[3]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[3]->angle = 0;
+	gameResources->bigNumberSpriteArray[3]->gravity = 0;
+	gameResources->bigNumberSpriteArray[3]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[3]->lift = 0;
+	gameResources->bigNumberSpriteArray[3]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[3]->srcRect.x = BIG_NUMBER3_XPOS;
+	gameResources->bigNumberSpriteArray[3]->srcRect.y = BIG_NUMBER3_YPOS;
+	gameResources->bigNumberSpriteArray[3]->srcRect.w = BIG_NUMBER3_WIDTH;
+	gameResources->bigNumberSpriteArray[3]->srcRect.h = BIG_NUMBER3_HEIGHT;
+	gameResources->bigNumberSpriteArray[3]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[3]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[3]->destRect.w = BIG_NUMBER3_WIDTH;
+	gameResources->bigNumberSpriteArray[3]->destRect.h = BIG_NUMBER3_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[3], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[3]->destRect.x = gameResources->bigNumberSpriteArray[2]->destRect.x + gameResources->bigNumberSpriteArray[2]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[4]->name = "big_number_4";
+	gameResources->bigNumberSpriteArray[4]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[4]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[4]->angle = 0;
+	gameResources->bigNumberSpriteArray[4]->gravity = 0;
+	gameResources->bigNumberSpriteArray[4]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[4]->lift = 0;
+	gameResources->bigNumberSpriteArray[4]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[4]->srcRect.x = BIG_NUMBER4_XPOS;
+	gameResources->bigNumberSpriteArray[4]->srcRect.y = BIG_NUMBER4_YPOS;
+	gameResources->bigNumberSpriteArray[4]->srcRect.w = BIG_NUMBER4_WIDTH;
+	gameResources->bigNumberSpriteArray[4]->srcRect.h = BIG_NUMBER4_HEIGHT;
+	gameResources->bigNumberSpriteArray[4]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[4]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[4]->destRect.w = BIG_NUMBER4_WIDTH;
+	gameResources->bigNumberSpriteArray[4]->destRect.h = BIG_NUMBER4_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[4], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[4]->destRect.x = gameResources->bigNumberSpriteArray[3]->destRect.x + gameResources->bigNumberSpriteArray[3]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[5]->name = "big_number_5";
+	gameResources->bigNumberSpriteArray[5]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[5]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[5]->angle = 0;
+	gameResources->bigNumberSpriteArray[5]->gravity = 0;
+	gameResources->bigNumberSpriteArray[5]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[5]->lift = 0;
+	gameResources->bigNumberSpriteArray[5]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[5]->srcRect.x = BIG_NUMBER5_XPOS;
+	gameResources->bigNumberSpriteArray[5]->srcRect.y = BIG_NUMBER5_YPOS;
+	gameResources->bigNumberSpriteArray[5]->srcRect.w = BIG_NUMBER5_WIDTH;
+	gameResources->bigNumberSpriteArray[5]->srcRect.h = BIG_NUMBER5_HEIGHT;
+	gameResources->bigNumberSpriteArray[5]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[5]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[5]->destRect.w = BIG_NUMBER5_WIDTH;
+	gameResources->bigNumberSpriteArray[5]->destRect.h = BIG_NUMBER5_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[5], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[5]->destRect.x = gameResources->bigNumberSpriteArray[4]->destRect.x + gameResources->bigNumberSpriteArray[4]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[6]->name = "big_number_6";
+	gameResources->bigNumberSpriteArray[6]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[6]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[6]->angle = 0;
+	gameResources->bigNumberSpriteArray[6]->gravity = 0;
+	gameResources->bigNumberSpriteArray[6]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[6]->lift = 0;
+	gameResources->bigNumberSpriteArray[6]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[6]->srcRect.x = BIG_NUMBER6_XPOS;
+	gameResources->bigNumberSpriteArray[6]->srcRect.y = BIG_NUMBER6_YPOS;
+	gameResources->bigNumberSpriteArray[6]->srcRect.w = BIG_NUMBER6_WIDTH;
+	gameResources->bigNumberSpriteArray[6]->srcRect.h = BIG_NUMBER6_HEIGHT;
+	gameResources->bigNumberSpriteArray[6]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[6]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[6]->destRect.w = BIG_NUMBER6_WIDTH;
+	gameResources->bigNumberSpriteArray[6]->destRect.h = BIG_NUMBER6_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[6], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[6]->destRect.x = gameResources->bigNumberSpriteArray[5]->destRect.x + gameResources->bigNumberSpriteArray[5]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[7]->name = "big_number_7";
+	gameResources->bigNumberSpriteArray[7]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[7]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[7]->angle = 0;
+	gameResources->bigNumberSpriteArray[7]->gravity = 0;
+	gameResources->bigNumberSpriteArray[7]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[7]->lift = 0;
+	gameResources->bigNumberSpriteArray[7]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[7]->srcRect.x = BIG_NUMBER7_XPOS;
+	gameResources->bigNumberSpriteArray[7]->srcRect.y = BIG_NUMBER7_YPOS;
+	gameResources->bigNumberSpriteArray[7]->srcRect.w = BIG_NUMBER7_WIDTH;
+	gameResources->bigNumberSpriteArray[7]->srcRect.h = BIG_NUMBER7_HEIGHT;
+	gameResources->bigNumberSpriteArray[7]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[7]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[7]->destRect.w = BIG_NUMBER7_WIDTH;
+	gameResources->bigNumberSpriteArray[7]->destRect.h = BIG_NUMBER7_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[7], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[7]->destRect.x = gameResources->bigNumberSpriteArray[6]->destRect.x + gameResources->bigNumberSpriteArray[6]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[8]->name = "big_number_8";
+	gameResources->bigNumberSpriteArray[8]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[8]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[8]->angle = 0;
+	gameResources->bigNumberSpriteArray[8]->gravity = 0;
+	gameResources->bigNumberSpriteArray[8]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[8]->lift = 0;
+	gameResources->bigNumberSpriteArray[8]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[8]->srcRect.x = BIG_NUMBER8_XPOS;
+	gameResources->bigNumberSpriteArray[8]->srcRect.y = BIG_NUMBER8_YPOS;
+	gameResources->bigNumberSpriteArray[8]->srcRect.w = BIG_NUMBER8_WIDTH;
+	gameResources->bigNumberSpriteArray[8]->srcRect.h = BIG_NUMBER8_HEIGHT;
+	gameResources->bigNumberSpriteArray[8]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[8]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[8]->destRect.w = BIG_NUMBER8_WIDTH;
+	gameResources->bigNumberSpriteArray[8]->destRect.h = BIG_NUMBER8_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[8], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[8]->destRect.x = gameResources->bigNumberSpriteArray[7]->destRect.x + gameResources->bigNumberSpriteArray[7]->destRect.w;
+
+	gameResources->bigNumberSpriteArray[9]->name = "big_number_9";
+	gameResources->bigNumberSpriteArray[9]->xTranslation = 0;
+	gameResources->bigNumberSpriteArray[9]->yTranslation = 0;
+	gameResources->bigNumberSpriteArray[9]->angle = 0;
+	gameResources->bigNumberSpriteArray[9]->gravity = 0;
+	gameResources->bigNumberSpriteArray[9]->maxGravity = 0;
+	gameResources->bigNumberSpriteArray[9]->lift = 0;
+	gameResources->bigNumberSpriteArray[9]->maxLift = 0;
+	gameResources->bigNumberSpriteArray[9]->srcRect.x = BIG_NUMBER9_XPOS;
+	gameResources->bigNumberSpriteArray[9]->srcRect.y = BIG_NUMBER9_YPOS;
+	gameResources->bigNumberSpriteArray[9]->srcRect.w = BIG_NUMBER9_WIDTH;
+	gameResources->bigNumberSpriteArray[9]->srcRect.h = BIG_NUMBER9_HEIGHT;
+	gameResources->bigNumberSpriteArray[9]->destRect.x = 0;
+	gameResources->bigNumberSpriteArray[9]->destRect.y = 0;
+	gameResources->bigNumberSpriteArray[9]->destRect.w = BIG_NUMBER9_WIDTH;
+	gameResources->bigNumberSpriteArray[9]->destRect.h = BIG_NUMBER9_HEIGHT;
+	ScaleSpriteToFitOnArea(gameResources->bigNumberSpriteArray[9], 0, 0, (float)WINDOW_WIDTH / 15, (float)WINDOW_HEIGHT / 15);
+	gameResources->bigNumberSpriteArray[9]->destRect.x = gameResources->bigNumberSpriteArray[8]->destRect.x + gameResources->bigNumberSpriteArray[8]->destRect.w;
 
 	return;
 }
@@ -623,7 +846,7 @@ static void DestroyText(Text* text)
 	return;
 }
 
-static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* const sdlParameters, int pairCount)
+static PillarPair* CreatePillarPairs(GameResources* gameResources, const SdlParameters* const sdlParameters, int pairCount)
 {
 	if (!gameResources)
 	{
@@ -736,7 +959,7 @@ static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParam
 	}
 	
 	// Get the capital height after resizing the pillars to fit the height of the window
-	gameResources->pillarCapitalHeight = pillarPairs->topPillar[0].destRect.h * PILLAR_SRCRECT_CAPITAL_HEIGHT_RATIO;
+	gameResources->pillarCapitalHeight = (double) pillarPairs->topPillar[0].destRect.h * PILLAR_SRCRECT_CAPITAL_HEIGHT_RATIO;
 
 	if (DEBUG) printf("[DEBUG INFO] Created 'Pillar pairs'. Count = %d\n", pairCount);
 	if (DEBUG) printf("[DEBUG INFO] Capital height of pillar = %d\n", gameResources->pillarCapitalHeight);
@@ -774,35 +997,26 @@ static void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameRes
 		return;
 	}
 
-	int windowWidth, windowHeight, floorHeight, pillarCapitalheight, topPillarheight, pillarPairMinimumSpacing;
 	int min, max, randomHeight;
 
-	// Fetch the values once instead of fetching multiple times
-	windowWidth = sdlParameters->dm.w;
-	windowHeight = sdlParameters->dm.h;
-	floorHeight = gameResources->floorSpriteArray[0].destRect.h;
-	topPillarheight = (pillarPair->topPillar->destRect.h);
-	pillarCapitalheight = gameResources->pillarCapitalHeight;
-	pillarPairMinimumSpacing = gameResources->pillarPairMinimumSpacing;
-
 	// Calculate random pillar height for top pillar and set the yPosition of the top pillar
-	min = pillarCapitalheight;
-	max = (2 * pillarCapitalheight) + pillarPairMinimumSpacing + floorHeight;
-	randomHeight = rand() % max;
-	pillarPair->topPillar->destRect.y = (-1 * topPillarheight) + randomHeight;
+	min = gameResources->pillarCapitalHeight;
+	max = sdlParameters->dm.h - (gameResources->pillarCapitalHeight + gameResources->pillarPairMinimumSpacing + gameResources->floorSpriteArray[0].destRect.h);
+	randomHeight = (rand() % (max + 1 - min)) + min;
+	pillarPair->topPillar->destRect.y = (-1 * pillarPair->topPillar->destRect.h) + randomHeight;
 	
 	// Prevent the pillars from going completely out of the window
-	if ((pillarPair->topPillar->destRect.y + topPillarheight) < min)
+	if ((pillarPair->topPillar->destRect.y + pillarPair->topPillar->destRect.h) < min)
 	{
 		pillarPair->topPillar->destRect.y = (-1 * pillarPair->topPillar->destRect.h) + min;
 	}
-	else if ((pillarPair->topPillar->destRect.y + topPillarheight) > max)
+	else if ((pillarPair->topPillar->destRect.y + pillarPair->topPillar->destRect.h) > max)
 	{
 		pillarPair->topPillar->destRect.y = (-1 * pillarPair->topPillar->destRect.h) + max;
 	}
 
 	// Set the yPosition for the bottom pillar according to the yPosition of the top pillar
-	pillarPair->bottomPillar->destRect.y = pillarPair->topPillar->destRect.y + topPillarheight + pillarPairMinimumSpacing;
+	pillarPair->bottomPillar->destRect.y = pillarPair->topPillar->destRect.y + pillarPair->topPillar->destRect.h + gameResources->pillarPairMinimumSpacing;
 
 	return;
 }

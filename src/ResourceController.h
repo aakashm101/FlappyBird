@@ -7,7 +7,7 @@ void ResetGameResourceParameters(ResetParameters resetParameters, GameResources*
 void UnloadGameResources(GameResources* gameResources);
 static Text* CreateText(const char* text, const int textSize, const SdlParameters* const sdlParameters, SDL_Color fontColor);
 static void DestroyText(Text* text);
-static PillarPair* CreatePillarPair(GameResources* gameResources, const SdlParameters* const sdlParameters, int pairCount);
+static PillarPair* CreatePillarPairs(GameResources* gameResources, const SdlParameters* const sdlParameters, int pairCount);
 static void SetRandomPillarHeight(PillarPair* pillarPair, GameResources* gameResources, const SdlParameters* const sdlParameters);
 static void DestroyPillarPair(PillarPair* pillarPair);
 
